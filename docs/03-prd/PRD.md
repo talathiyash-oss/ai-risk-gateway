@@ -369,7 +369,7 @@ The block-rate target is a hygiene check on our own suite, not proof of real-wor
 
 | ID | Question | Resolved by |
 |---|---|---|
-| Q-1 | Bank name, size, number of RMs, query volume | Scenario doc (Task 1.1) |
+| Q-1 | ~~Bank name, size, number of RMs, query volume~~ | Resolved 2026-10-23: Brindlemoor Trust, see `docs/00-scenario.md` |
 | Q-2 | Are BO-1 to BO-5 and the 60% target right? | BRD |
 | Q-3 | What is the Bank's risk appetite for this copilot (a maximum acceptable EAL)? | BRD; CISO interview |
 | Q-4 | ~~Confirm decisions D-1 to D-6~~ | Resolved 2026-10-23, see §6 |
