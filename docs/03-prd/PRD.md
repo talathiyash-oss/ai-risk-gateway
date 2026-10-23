@@ -1,0 +1,376 @@
+# Product Requirements Document: AI Risk Gateway
+
+## 0. Document Control
+
+| Field | Value |
+|---|---|
+| Version | 0.1 (draft) |
+| Status | Draft for product owner review |
+| Product owner | Yash Talathi |
+| Approvers | CISO, Head of Compliance, RM lead, Engineering lead |
+| Source spec | `docs/superpowers/specs/2026-10-23-ai-risk-gateway-design.md` |
+
+**Drafted before the BRD.** The business objectives (BO-x) in §1.3 are working assumptions. The BRD will confirm or replace them, and this PRD is updated to match before sign-off. Every item marked **[Assumed]** needs product owner confirmation.
+
+| Version | Date | Change |
+|---|---|---|
+| 0.1 | 2026-10-23 | First draft |
+
+---
+
+## 1. Overview
+
+### 1.1 Problem
+
+The Bank is rolling out an internal AI copilot that lets relationship managers (RMs) ask questions over client account data, policies and product documents. The CISO can't tell the board or CFO how much financial exposure the copilot creates, or which security controls are worth paying for. Current AI risk assessments give qualitative ratings ("high," "medium") that can't be compared with a control's cost.
+
+### 1.2 Product Vision
+
+A security gateway that protects the copilot at runtime, measures how well each protection works, and turns those measurements into Expected Annual Loss, so that funding decisions on AI controls are made in dollars and backed by evidence.
+
+### 1.3 Business Objectives [Assumed, pending BRD]
+
+| ID | Objective |
+|---|---|
+| BO-1 | Quantify the copilot's security-related loss exposure in dollars, as a range, before full rollout |
+| BO-2 | Reduce modeled Expected Annual Loss from copilot incidents by at least 60% vs. the unprotected baseline |
+| BO-3 | Protect the copilot's productivity case: controls must not noticeably slow down or block legitimate RM work |
+| BO-4 | Produce audit-ready evidence against NIST AI RMF, ISO/IEC 42001, the EU AI Act (EU subsidiary) and SR 11-7 |
+| BO-5 | Rank AI security controls by return on investment so the CISO can prioritize funding |
+
+---
+
+## 2. Personas
+
+| Persona | Role | Goals | Frustrations | "Good" looks like |
+|---|---|---|---|---|
+| **Priya, Relationship Manager** | End user. Uses the copilot 10–20 times a day to prepare for client meetings | Fast, accurate answers about her clients | Security tools that block her for no clear reason; hearing "use a different tool" | She rarely notices the gateway exists |
+| **Daniel, CISO** | Buyer. Accountable for AI security risk | Defend AI security spend to the CFO and board in dollars | Vendors and teams that say "high risk" without numbers; numbers he can't defend | He answers "what's our exposure and what should we fund?" in one slide |
+| **Maria, Compliance Analyst** | Auditor. Prepares evidence for regulators and internal audit | Show which controls exist, which rules they satisfy, and that they ran | Evidence spread across emails and screenshots | One export answers the auditor's questions |
+| **Sam, Model Risk Validator** | Second line of defense under SR 11-7 | Independently check that the model and its controls work as claimed | Results she can't reproduce | Reruns the tests and gets the same numbers |
+
+---
+
+## 3. User Stories
+
+| ID | Story | Priority | BO |
+|---|---|---|---|
+| US-01 | As an RM, I want to ask questions about my clients and get answers without noticeable delay, so that the copilot saves me time | Must | BO-3 |
+| US-02 | As an RM, when a request is blocked, I want a clear message and a reference ID, so that I can get help without guessing | Must | BO-3 |
+| US-03 | As an RM, I want to never see another client's data by mistake, so that I don't cause a privacy breach | Must | BO-2 |
+| US-04 | As the CISO, I want to see the copilot's Expected Annual Loss in dollars, with a range, so that I can report exposure to the board | Must | BO-1 |
+| US-05 | As the CISO, I want to see the loss reduction, cost and ROI of each guardrail, so that I can decide what to fund | Must | BO-5 |
+| US-06 | As the CISO, I want to know which inputs are measured, benchmarked or assumed, so that I can defend the numbers when challenged | Must | BO-1 |
+| US-07 | As the CISO, I want to turn individual guardrails on and off and see the effect, so that each control's value is measured separately | Must | BO-5 |
+| US-08 | As the CISO, I want to see a 1-in-10-year loss figure, so that I can discuss reserves with the CFO | Should | BO-1 |
+| US-09 | As the CISO, I want to change key assumptions and see the loss recalculate, so that I can test how sensitive the answer is | Should | BO-5 |
+| US-10 | As a compliance analyst, I want every gateway decision logged with its control ID, so that I can prove controls operated | Must | BO-4 |
+| US-11 | As a compliance analyst, I want to see which regulations apply and which control addresses each, so that I can prepare for an exam | Must | BO-4 |
+| US-12 | As a compliance analyst, I want to export the audit log, so that I can hand it to auditors | Should | BO-4 |
+| US-13 | As the CISO, I want to see coverage of all 10 OWASP LLM risks, including those owned outside the gateway, so that there are no unexplained gaps | Should | BO-4 |
+| US-14 | As a model risk validator, I want to rerun the test suite and get identical results, so that I can independently validate the controls | Must | BO-4 |
+| US-15 | As the CISO, I want to see a live attack blocked by the gateway, so that the board understands what the controls do | Should | BO-1 |
+
+---
+
+## 4. Functional Requirements
+
+Each requirement has acceptance criteria in Given/When/Then form. Test case IDs mirror requirement IDs (FR-05 → TC-05a, TC-05b, …) and are written in Phase 6.
+
+### 4.1 Gateway Core
+
+**FR-01 Request proxying** (US-01) Must
+The gateway accepts RM chat requests, forwards them to the copilot, and returns the copilot's response.
+- *Given* all guardrails are off, *when* an RM sends a question, *then* the response is identical to the copilot's direct response.
+
+**FR-02 Guardrail switches** (US-07) Must
+Each guardrail (GR-01 to GR-05) can be turned on or off in a configuration file, with no code change.
+- *Given* GR-02 is set to off in configuration, *when* the gateway restarts, *then* no GR-02 checks run and the startup log lists GR-02 as disabled.
+
+**FR-03 Policy decisions** (US-02) Must
+For each request, the gateway decides allow, redact or block. A block returns a standard message with a reference ID and **no detail about which rule fired** (to avoid helping attackers adjust).
+- *Given* a request is blocked, *when* the RM sees the response, *then* it shows the standard block message and a reference ID that matches the audit log entry.
+- *Given* a request is blocked, *when* the response is inspected, *then* it contains no guardrail ID, pattern or score.
+
+**FR-04 Fail modes** (D-1) Must
+Each guardrail has a configurable failure mode: fail closed (block the request if the guardrail errors) or fail open (allow the request and log the failure).
+- *Given* GR-02 is fail closed and its PII engine raises an error, *when* a request arrives, *then* the request is blocked and the log records `GR-02 / error / fail_closed`.
+- *Given* GR-04 is fail open and the rate limiter errors, *when* a request arrives, *then* the request is allowed and the log records `GR-04 / error / fail_open`.
+
+### 4.2 GR-01 Prompt Injection (OWASP LLM01)
+
+**FR-05 Direct injection detection** (US-03) Must
+Detect instructions in the RM's prompt that try to override the copilot's rules.
+- *Given* GR-01 is on, *when* a prompt from the injection test set is submitted, *then* it is blocked and a GR-01 event is logged.
+
+**FR-06 Indirect injection detection** (US-03) Must
+Scan retrieved document chunks for embedded instructions before they reach the copilot.
+- *Given* GR-01 is on and a retrieved chunk contains an embedded instruction, *when* the copilot builds its answer, *then* that chunk is excluded and a GR-01 event is logged with the document ID.
+
+### 4.3 GR-02 Sensitive Information (OWASP LLM02)
+
+**FR-07 PII redaction in prompts** (US-03) Must
+Detect and redact PII in prompts using Presidio, including custom recognizers for Bank account numbers and client IDs.
+- *Given* GR-02 is on, *when* a prompt contains an SSN, *then* the SSN is replaced with `<US_SSN>` before reaching the copilot, and a GR-02 redact event is logged.
+- *Given* GR-02 is on, *when* a prompt contains a Bank account number in the Bank's format, *then* it is replaced with `<ACCOUNT_NUMBER>`.
+
+**FR-08 Cross-client leak check** (US-03) Must
+Each request carries the client ID the RM is working on. The response may reference only that client.
+- *Given* GR-02 is on and the session client is C-1001, *when* the copilot response contains an account number belonging to C-2002, *then* that account number is redacted and a GR-02 event is logged with both client IDs.
+
+### 4.4 GR-03 System Prompt Leakage (OWASP LLM07)
+
+**FR-09 System prompt leak blocking** (US-03) Must
+The copilot's system prompt contains a secret canary string. Responses containing the canary, or closely matching system prompt text, are blocked.
+- *Given* GR-03 is on, *when* a response contains the canary string, *then* the response is blocked and a GR-03 event is logged.
+- *Given* GR-03 is on, *when* a response reproduces at least 80% of any system prompt sentence, *then* the response is blocked.
+
+### 4.5 GR-04 Unbounded Consumption (OWASP LLM10)
+
+**FR-10 Rate limiting and budgets** (US-01) Must
+Per-user limits on requests per minute and tokens per day. [Assumed defaults: 20 requests/minute, 50,000 tokens/day]
+- *Given* GR-04 is on, *when* a user sends a 21st request within one minute, *then* the gateway returns HTTP 429 with the standard message and logs a GR-04 event.
+
+### 4.6 GR-05 Audit Logging
+
+**FR-11 Decision logging** (US-10) Must
+Every request produces one log entry: timestamp, request ID, user ID, session client ID, guardrails evaluated, decision per guardrail, reason code, latency. No raw PII is written to the log.
+- *Given* any request, *when* it completes, *then* exactly one log entry exists with all listed fields.
+- *Given* a prompt contains an SSN, *when* the log entry is written, *then* the log contains `<US_SSN>`, not the SSN.
+
+**FR-12 Log export** (US-12) Should
+Export the audit log for a date range as JSON Lines.
+- *Given* log entries exist for a date range, *when* an export is requested, *then* a `.jsonl` file is produced with one entry per line, matching the log exactly.
+
+### 4.7 Simulated Copilot
+
+**FR-13 Synthetic dataset** (US-14) Must
+At least 50 synthetic clients across at least 10 RMs, generated from a fixed seed. Includes names, account numbers, balances, products and notes. No real data.
+- *Given* the same seed, *when* the dataset is generated twice, *then* the files are byte-identical.
+
+**FR-14 Deliberate baseline vulnerabilities** (US-07) Must
+With all guardrails off, the copilot obeys injected instructions, can return other clients' data, and can reveal its system prompt. This gives a measurable unprotected baseline.
+- *Given* all guardrails are off, *when* each attack category's example prompt is sent, *then* the attack succeeds.
+
+### 4.8 Test Suite and Evaluation Harness
+
+**FR-15 Labelled test suite** (US-14) Must
+Labelled attack prompts for each in-scope category, plus benign RM questions, in the sizes set by D-3. **Split into a tuning set (75%) and a hold-out set (25%).** Guardrails may be tuned only on the tuning set; reported rates use the hold-out set only (see RISK-01).
+- *Given* the suite, *when* inspected, *then* every prompt has a category label, an expected outcome (attack/benign), and a split label (tune/holdout).
+
+**FR-16 Harness runs** (US-07, US-14) Must
+The harness replays the hold-out set under these configurations: all off, each guardrail on alone, all on. For each, it reports attack block rate and benign false-positive rate, with counts.
+- *Given* a fixed seed, *when* the harness runs twice, *then* the results files are identical.
+- *Given* the all-off configuration, *when* the harness runs, *then* the attack block rate is 0%.
+
+**FR-17 Results handoff** (US-04) Must
+The harness writes a results file that the FAIR engine reads as the source for Vulnerability inputs.
+- *Given* a harness results file, *when* the FAIR engine runs, *then* each scenario's Vulnerability is labelled "Measured" and cites the results file and run ID.
+
+### 4.9 FAIR Risk Engine
+
+**FR-18 Scenario configuration** (US-06) Must
+Scenarios S1–S4 are defined in a configuration file. Every input is a PERT range (min, most likely, max) with a provenance label (Measured / Benchmarked / Assumed) and a source or rationale.
+- *Given* an input without a provenance label, *when* the engine starts, *then* it refuses to run and names the missing field.
+
+**FR-19 Monte Carlo simulation** (US-04, US-14) Must
+Simulate 10,000 years per scenario (configurable), without and with controls, with an optional fixed seed.
+- *Given* a fixed seed, *when* the engine runs twice, *then* all outputs are identical.
+- *Given* inputs where min = most likely = max (no uncertainty), *when* the engine runs, *then* EAL equals frequency × magnitude exactly.
+
+**FR-20 Effectiveness haircut** (US-06) Must
+Vulnerability is derived from the measured block rate using the D-5 haircut.
+- *Given* a measured block rate of 92%, *when* Vulnerability is derived, *then* the PERT range is min 8.0%, most likely 21.8%, max 44.8%.
+
+**FR-21 Risk outputs** (US-04, US-08) Must
+Per scenario and in total, without and with controls: EAL, P10, P50, P90, and a loss exceedance curve.
+- *Given* a completed run, *when* outputs are read, *then* all listed values exist for every scenario and for the total, in both conditions.
+
+**FR-22 ROI per control** (US-05) Must
+ROI = (EAL reduction − control cost) ÷ control cost. Control cost = annual run cost + friction cost. Friction cost = false-positive rate × annual benign queries × minutes lost per false block ÷ 60 × RM loaded hourly rate (D-4).
+- *Given* EAL reduction $500,000, run cost $40,000, FP rate 1%, 1,125,000 annual benign queries, 3 minutes per block, $95/hour, *when* ROI is calculated, *then* friction cost = $53,437.50, control cost = $93,437.50, ROI ≈ 4.35 (435%).
+
+### 4.10 Dashboard
+
+**FR-23 Executive view** (US-04, US-08) Must
+Total EAL without and with controls, P90, percentage reduction, and the top three controls by ROI.
+- *Given* a completed FAIR run, *when* the CISO opens the dashboard, *then* the executive view shows all listed values on one screen without scrolling at 1440×900.
+
+**FR-24 Loss exceedance curve** (US-08) Must
+A chart of the probability of losing more than $X, without vs. with controls.
+
+**FR-25 Control view** (US-05) Must
+Per guardrail: block rate, false-positive rate, EAL reduction, run cost, friction cost, ROI.
+
+**FR-26 Provenance view** (US-06) Must
+Every model input shows its value, range, provenance label and source. Can be filtered to show only Assumed inputs.
+- *Given* the provenance view, *when* "Assumed only" is selected, *then* only Assumed inputs appear, each with its rationale.
+
+**FR-27 Compliance view** (US-11, US-13) Must
+Shows the applicability table, the control register (GR-x → OWASP, NIST AI RMF, ISO 42001, EU AI Act, SR 11-7), and the coverage table for all 10 OWASP risks, naming the owning control for those outside the gateway.
+
+**FR-28 What-if analysis** (US-09) Should
+Change selected inputs (threat frequency, loss magnitude, guardrail on/off) and see EAL recalculate.
+- *Given* the CISO doubles S2's threat event frequency, *when* the model reruns, *then* the new EAL appears within 10 seconds next to the original.
+
+**FR-29 Live demo panel** (US-15) Should
+Send a prompt through the running gateway and see the decision and the audit log entry.
+
+### 4.11 Stretch Items
+
+**FR-30 Markdown link stripping, OWASP LLM05** Could (D-6)
+Remove markdown images and links pointing to domains not on an allowlist, blocking data exfiltration through rendered images.
+
+**FR-31 Permission-aware retrieval, OWASP LLM08** Could (D-6)
+The simulated copilot only retrieves records for the session client. The harness compares S1 loss with this upstream fix vs. with GR-02 alone.
+
+**FR-32 Real LLM backend** Won't (this release)
+Replace the simulated copilot with a real LLM API. Planned as a later toggle.
+
+---
+
+## 5. Non-Functional Requirements
+
+| ID | Requirement | Acceptance |
+|---|---|---|
+| NFR-01 | Gateway adds no more than 150 ms at p95 per request, excluding copilot time, on a standard laptop | Harness reports p95 added latency ≤ 150 ms over the full suite |
+| NFR-02 | Synthetic data only. No real personal or bank data anywhere in the repository | Scan of the repo finds no real data; the data generator is the only source |
+| NFR-03 | Reproducible: the same seed gives identical harness and FAIR outputs | FR-16 and FR-19 reproducibility tests pass |
+| NFR-04 | Runs locally with one setup command and one run command. No paid services. Python 3.11+ | A fresh clone runs following only the README |
+| NFR-05 | Every number on the dashboard can be traced to a configuration file or results file | Each dashboard value shows its source file on hover or in a tooltip |
+| NFR-06 | Block messages reveal nothing about detection logic | FR-03 second criterion passes |
+| NFR-07 | The README explains every component in plain language for a non-engineer | Product owner review: can explain each component after reading |
+
+---
+
+## 6. Decision Log
+
+Status for all: **Proposed, product owner to confirm.**
+
+| ID | Decision | Options | Recommendation | Why |
+|---|---|---|---|---|
+| D-1 | Failure mode per guardrail | Fail closed / fail open | GR-01, GR-02, GR-03, GR-05: **closed**. GR-04: **open** | Data exposure costs far more than a short outage. A rate-limiter fault doesn't expose data. GR-05 is closed because "if we can't record it, we don't serve it" supports SR 11-7 and Art. 12 evidence. Trade-off: a logging fault takes the copilot down. |
+| D-2 | Highest acceptable false-positive rate | 1% / 2% / 5% | **2% per guardrail, 5% combined** | Above about 1 in 20 legitimate questions blocked, RMs are likely to drift to unapproved tools, which creates worse risk |
+| D-3 | Test suite size | Small (20/category) / Medium (40) / Large (100) | **40 attacks per category (160 total) + 200 benign** | Enough to put meaningful ranges on rates. More benign than attack prompts, because a 2% FP limit needs a large benign set to measure |
+| D-4 | Friction cost inputs [Assumed] | — | **$95/hour RM loaded cost; 3 minutes lost per false block; 15 queries per RM per day; 250 working days; 300 RMs** (= 1,125,000 benign queries/year) | Placeholders until the scenario doc and BRD set real figures |
+| D-5 | Effectiveness haircut | None / fixed / ranged | **Ranged:** Vulnerability min = 1 − b, most likely = 1 − 0.85b, max = 1 − 0.6b (b = measured block rate) | Our own suite overstates real-world protection. The range keeps the best case while assuming adaptive attackers |
+| D-6 | Stretch items FR-30, FR-31 | Build / defer | **Decide at the end of Sprint 2** | Depends on how much effort remains |
+
+---
+
+## 7. Success Metrics
+
+### Product metrics (does it work?)
+
+| Metric | Target |
+|---|---|
+| Attack block rate on the hold-out set, all guardrails on | ≥ 90% per in-scope category |
+| Benign false-positive rate, hold-out set | Within D-2 limits |
+| Gateway added latency | Within NFR-01 |
+| Reproducibility | 100% identical on rerun |
+| Must requirements with a passing test | 100% |
+
+The block-rate target is a hygiene check on our own suite, not proof of real-world security. That's why D-5 exists.
+
+### Outcome metrics (does it deliver the business objectives?)
+
+| Metric | Target | BO |
+|---|---|---|
+| Modeled EAL reduction, all controls on vs. baseline | ≥ 60% | BO-2 |
+| CISO can answer "what's our exposure and what should we fund?" from the executive view | In a 3-minute demo, unaided | BO-1, BO-5 |
+| Controls ranked by ROI, with friction included | All 5 guardrails | BO-5 |
+| In-scope controls mapped with verified citations | 100% | BO-4 |
+| Traceability: every BO links to at least one Must FR with a test | 100% | All |
+
+---
+
+## 8. OWASP LLM Top 10 (2025) Coverage
+
+| Risk | Coverage | Owner |
+|---|---|---|
+| LLM01 Prompt Injection | Gateway: GR-01 | This product |
+| LLM02 Sensitive Information Disclosure | Gateway: GR-02 | This product |
+| LLM03 Supply Chain | Out of scope | Third-party risk management: vendor due diligence (ISO 42001 A.10) |
+| LLM04 Data & Model Poisoning | Partly: poisoned documents via FR-06 | Model vendor (weights, training data); content owners (document review) |
+| LLM05 Improper Output Handling | Stretch: FR-30 | This product (if built); otherwise front-end team |
+| LLM06 Excessive Agency | Not applicable by design: the copilot is read-only | Architecture decision, recorded here |
+| LLM07 System Prompt Leakage | Gateway: GR-03 | This product |
+| LLM08 Vector & Embedding Weaknesses | Symptom caught by GR-02. Root cause fixed upstream; stretch FR-31 | Retrieval/platform team |
+| LLM09 Misinformation | Out of scope | Business line: grounding checks and human review of client-facing advice |
+| LLM10 Unbounded Consumption | Gateway: GR-04 | This product |
+
+---
+
+## 9. Out of Scope
+
+- A real LLM backend (FR-32, later release)
+- Authentication and single sign-on (user ID is passed in the request)
+- Production deployment, high availability, scaling
+- A real vector database (the simulated copilot uses in-memory retrieval)
+- RM override of blocks ("break glass")
+- OWASP risks not listed as covered in §8
+
+---
+
+## 10. Assumptions, Dependencies, Risks
+
+### Assumptions
+
+| ID | Assumption |
+|---|---|
+| A-1 | BO-1 to BO-5 reflect the Bank's priorities (to be confirmed in the BRD) |
+| A-2 | D-4 friction inputs are reasonable for a US regional bank (to be confirmed in the scenario doc) |
+| A-3 | Public breach-cost benchmarks for the financial sector are a fair basis for loss magnitude |
+
+### Dependencies
+
+| ID | Dependency |
+|---|---|
+| DEP-1 | Scenario doc (`docs/00-scenario.md`) completed |
+| DEP-2 | BRD v1.0 signed off |
+| DEP-3 | Open-source libraries: FastAPI, Microsoft Presidio (with spaCy model), Streamlit, NumPy |
+| DEP-4 | Phase 4 verification of framework citations |
+
+### Risks
+
+| ID | Risk | Mitigation |
+|---|---|---|
+| RISK-01 | Guardrails overfit to the test suite, so measured rates look better than reality | Tuning/hold-out split (FR-15) and the effectiveness haircut (D-5) |
+| RISK-02 | Benchmark loss figures are outdated or not comparable | Cite year and sector for each; show as Benchmarked with ranges |
+| RISK-03 | Presidio misses Bank-specific identifiers | Custom recognizers (FR-07); a test set of Bank-format IDs |
+| RISK-04 | Scope creep from stretch items | D-6 decision gate at the end of Sprint 2 |
+| RISK-05 | Framework clause IDs cited incorrectly | Phase 4 verification against primary sources |
+| RISK-06 | Dollar outputs taken as precise predictions | Always show ranges, P90 and provenance; label it a model, not a forecast |
+
+---
+
+## 11. Release Plan
+
+| Sprint | Scope | Demo at sprint review |
+|---|---|---|
+| 1 | FR-01–FR-14, NFR-06 | An attack succeeds with guardrails off and is blocked with them on; audit log entries |
+| 2 | FR-15–FR-22, NFR-01, NFR-03 | Harness results table and FAIR outputs from the command line; D-6 decision |
+| 3 | FR-23–FR-29, NFR-04, NFR-05, NFR-07; FR-30/31 if approved | Full CISO dashboard walkthrough |
+
+---
+
+## 12. Open Questions
+
+| ID | Question | Resolved by |
+|---|---|---|
+| Q-1 | Bank name, size, number of RMs, query volume | Scenario doc (Task 1.1) |
+| Q-2 | Are BO-1 to BO-5 and the 60% target right? | BRD |
+| Q-3 | What is the Bank's risk appetite for this copilot (a maximum acceptable EAL)? | BRD; CISO interview |
+| Q-4 | Confirm decisions D-1 to D-5 | Product owner review of this PRD |
+
+---
+
+## 13. Approvals
+
+| Role | Name | Decision | Date |
+|---|---|---|---|
+| Product owner | Yash Talathi | | |
+| CISO | | | |
+| Head of Compliance | | | |
+| RM lead | | | |
+| Engineering lead | | | |
