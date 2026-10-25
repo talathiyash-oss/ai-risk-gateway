@@ -1,0 +1,105 @@
+import pytest
+
+from airg.audit import AuditLog
+from airg.config import GUARD_IDS
+from airg.copilot import Copilot
+from airg.guardrails.injection import InjectionGuard
+from airg.guardrails.pii import PiiGuard
+from airg.guardrails.prompt_leak import PromptLeakGuard
+from airg.guardrails.rate_limit import RateLimitGuard
+from airg.pipeline import Gateway
+from airg.reviews import ReviewQueue
+
+# A legitimate question that GR-01 wrongly blocks ("you are now"): the case D-7 exists for.
+FALSE_POSITIVE = "You are now looking at the trust account guide, what are the distribution rules?"
+
+
+@pytest.fixture
+def setup(records, redactor, tmp_path, make_config, clock):
+    audit = AuditLog(tmp_path / "audit.jsonl", redactor, clock=clock)
+    guards = {"GR-01": InjectionGuard(), "GR-02": PiiGuard(records, redactor),
+              "GR-03": PromptLeakGuard(), "GR-04": RateLimitGuard(clock=clock)}
+    gateway = Gateway(make_config(set(GUARD_IDS)), Copilot(records), guards, audit)
+    queue = ReviewQueue(gateway, audit, target_minutes=15, clock=clock)
+    return gateway, queue, audit
+
+
+def blocked_and_held(gateway, queue, message=FALSE_POSITIVE):
+    result = gateway.handle("RM-01", "C-1001", message)
+    queue.hold(result, "RM-01", "C-1001", message)
+    return result
+
+
+def test_request_review_for_blocked_request(setup):
+    gateway, queue, audit = setup
+    result = blocked_and_held(gateway, queue)
+    review = queue.request(result.request_id, "RM-01")
+    assert queue.public_view(review) == {"review_id": review.review_id, "request_id": result.request_id,
+                                         "status": "pending", "target_minutes": 15, "answer": None}
+    last = audit.entries()[-1]
+    assert (last["event"], last["request_id"], last["target_minutes"]) == ("review_requested", result.request_id, 15)
+
+
+def test_rm_cannot_see_answer_before_approval(setup):
+    gateway, queue, _ = setup
+    review = queue.request(blocked_and_held(gateway, queue).request_id, "RM-01")
+    fetched = queue.get(review.review_id, "RM-01")
+    assert fetched.status == "pending"
+    assert queue.public_view(fetched)["answer"] is None
+
+
+def test_approval_releases_answer_and_logs_reviewer(setup, clock):
+    gateway, queue, audit = setup
+    review = queue.request(blocked_and_held(gateway, queue).request_id, "RM-01")
+    clock.t += 300
+    review = queue.decide(review.review_id, "REVIEWER-1", approve=True)
+    assert review.status == "approved"
+    assert "250,000 dollars" in queue.public_view(review)["answer"]
+    last = audit.entries()[-1]
+    assert (last["event"], last["reviewer_id"], last["decision"], last["minutes_taken"]) == (
+        "review_decided", "REVIEWER-1", "approved", 5.0)
+
+
+def test_rejection_keeps_the_block(setup):
+    gateway, queue, _ = setup
+    review = queue.request(blocked_and_held(gateway, queue).request_id, "RM-01")
+    review = queue.decide(review.review_id, "REVIEWER-1", approve=False)
+    assert review.status == "rejected"
+    assert queue.public_view(review)["answer"] is None
+
+
+def test_review_cannot_be_decided_twice(setup):
+    gateway, queue, _ = setup
+    review = queue.request(blocked_and_held(gateway, queue).request_id, "RM-01")
+    queue.decide(review.review_id, "REVIEWER-1", approve=False)
+    with pytest.raises(ValueError):
+        queue.decide(review.review_id, "REVIEWER-1", approve=True)
+
+
+def test_only_the_requesting_rm_can_see_a_review(setup):
+    gateway, queue, _ = setup
+    review = queue.request(blocked_and_held(gateway, queue).request_id, "RM-01")
+    with pytest.raises(LookupError):
+        queue.get(review.review_id, "RM-99")
+
+
+def test_unknown_request_cannot_be_reviewed(setup):
+    _, queue, _ = setup
+    with pytest.raises(LookupError):
+        queue.request("no-such-request", "RM-01")
+
+
+def test_rate_limited_requests_are_not_reviewable(setup):
+    _, queue, _ = setup
+    from airg.pipeline import GatewayResult
+    queue.hold(GatewayResult("req-429", "blocked", None, 429, blocked_by="GR-04"), "RM-01", "C-1001", "hi")
+    with pytest.raises(LookupError):
+        queue.request("req-429", "RM-01")
+
+
+def test_guard_error_blocks_are_not_reviewable(setup):
+    _, queue, _ = setup
+    from airg.pipeline import GatewayResult
+    queue.hold(GatewayResult("req-503", "blocked", None, 503, blocked_by="GR-02"), "RM-01", "C-1001", "hi")
+    with pytest.raises(LookupError):
+        queue.request("req-503", "RM-01")
