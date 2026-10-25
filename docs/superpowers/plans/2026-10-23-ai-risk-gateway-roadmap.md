@@ -36,25 +36,26 @@
 **Files:**
 - Create: `docs/00-scenario.md`
 
-- [ ] **Step 1:** Choose a fictional bank name. Search it plus "bank" and check the FDIC BankFind database to confirm no real institution uses it.
-- [ ] **Step 2:** Write `docs/00-scenario.md` with: bank name, size (assets, number of RMs, number of clients), US footprint, the EU subsidiary (country, what it does), and the copilot rollout plan (pilot group, timeline). Claude reviews it to make sure the numbers are consistent.
-- [ ] **Step 3:** Commit: `git add docs/00-scenario.md && git commit -m "docs: define client scenario"`
+- [x] **Step 1:** Choose a fictional bank name. Search it plus "bank" and check the FDIC BankFind database to confirm no real institution uses it.
+- [x] **Step 2:** Write `docs/00-scenario.md` with: bank name, size (assets, number of RMs, number of clients), US footprint, the EU subsidiary (country, what it does), and the copilot rollout plan (pilot group, timeline). Claude reviews it to make sure the numbers are consistent.
+- [x] **Step 3:** Commit: `git add docs/00-scenario.md && git commit -m "docs: define client scenario"`
 
 ### Task 1.2: Prepare the interview
 
 **Files:**
 - Create: `docs/01-discovery/interview-guide.md`
 
-- [ ] **Step 1:** Write 8–12 open questions for the CISO, grouped into: current state, pain, what triggered this, constraints (budget, timeline, regulators), and what success looks like.
-- [ ] **Step 2:** Claude reviews them and flags leading questions (ones that suggest an answer) and closed yes/no questions.
-- [ ] **Step 3:** Revise and commit: `git commit -am "docs: discovery interview guide"` (use `git add` first for the new file).
+- [x] **Step 1:** Write 8–12 open questions for the CISO, grouped into: current state, pain, what triggered this, constraints (budget, timeline, regulators), and what success looks like.
+- [x] **Step 2:** Claude reviews them and flags leading questions (ones that suggest an answer) and closed yes/no questions.
+- [x] **Step 3:** Revise and commit: `git commit -am "docs: discovery interview guide"` (use `git add` first for the new file).
+  *Done as `interview-cheat-sheet.md` plus the role-play prompt `ciso-roleplay-prompt.md`; the interview ran by voice on 2026-10-25.*
 
 ### Task 1.3: Run the interviews
 
 **Files:**
 - Create: `docs/01-discovery/interview-notes.md`
 
-- [ ] **Step 1:** Interview Claude-as-CISO (about 20 minutes, in chat). Take notes in your own words.
+- [x] **Step 1:** Interview Claude-as-CISO (about 20 minutes, in chat). Take notes in your own words.
 - [ ] **Step 2:** Short interviews (5 questions each) with Claude-as-CFO, Claude-as-Head of Compliance, and Claude-as-RM lead. Expect them to disagree. The RM lead will push back on friction.
 - [ ] **Step 3:** At the end of the notes, list where the stakeholders disagree. Commit.
 
@@ -64,10 +65,10 @@
 - Create: `docs/01-discovery/problem-statement.md`
 - Create: `docs/01-discovery/stakeholders-raci.md`
 
-- [ ] **Step 1:** Write the problem statement in this format: *"[Who] needs a way to [do what] because [why it matters, with evidence]. Today, [current workaround and its cost]."* Keep it under 120 words, and don't name a solution.
-- [ ] **Step 2:** Stakeholder map: a power/interest grid listing each stakeholder's main concern.
-- [ ] **Step 3:** RACI table. Rows: the 7 SDLC phases plus "accept residual risk" and "fund controls." Columns: CISO, CFO, Head of Compliance, RM lead, Product owner, Engineering. Each row has exactly one **A** (Accountable).
-- [ ] **Step 4:** Claude-as-CISO reviews it. **Gate: problem agreed.** Commit: `git commit -m "docs: phase 1 discovery complete"`
+- [x] **Step 1:** Write the problem statement in this format: *"[Who] needs a way to [do what] because [why it matters, with evidence]. Today, [current workaround and its cost]."* Keep it under 120 words, and don't name a solution.
+- [x] **Step 2:** Stakeholder map: a power/interest grid listing each stakeholder's main concern.
+- [x] **Step 3:** RACI table. Rows: the 7 SDLC phases plus "accept residual risk" and "fund controls." Columns: CISO, CFO, Head of Compliance, RM lead, Product owner, Engineering. Each row has exactly one **A** (Accountable).
+- [x] **Step 4:** Claude-as-CISO reviews it. **Gate: problem agreed.** Commit: `git commit -m "docs: phase 1 discovery complete"`
 
 ---
 
