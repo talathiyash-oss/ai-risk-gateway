@@ -26,3 +26,9 @@ def make_config():
                 for g, c in base.guardrails.items()},
             review_target_minutes=base.review_target_minutes)
     return _make
+
+
+@pytest.fixture(scope="session")
+def redactor():
+    from airg.redaction import get_redactor
+    return get_redactor()
