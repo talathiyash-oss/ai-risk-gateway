@@ -30,15 +30,15 @@ The Bank is rolling out an internal AI copilot that lets relationship managers (
 
 A security gateway that protects the copilot at runtime, measures how well each protection works, and turns those measurements into Expected Annual Loss, so that funding decisions on AI controls are made in dollars and backed by evidence.
 
-### 1.3 Business Objectives [Assumed, pending BRD]
+### 1.3 Business Objectives (from BRD §3)
 
 | ID | Objective |
 |---|---|
-| BO-1 | Quantify the copilot's security-related loss exposure in dollars, as a range, before full rollout |
-| BO-2 | Reduce modeled Expected Annual Loss from copilot incidents by at least 60% vs. the unprotected baseline |
-| BO-3 | Protect the copilot's productivity case: controls must not noticeably slow down or block legitimate RM work |
-| BO-4 | Produce audit-ready evidence against NIST AI RMF, ISO/IEC 42001, the EU AI Act (EU subsidiary) and the Federal Reserve's model risk guidance (SR 26-2) |
-| BO-5 | Rank AI security controls by return on investment so the CISO can prioritize funding |
+| BO-1 | Quantify the copilot's exposure in dollars (EAL and P90, as ranges): preliminary by early February 2027, final by end of March 2027 |
+| BO-2 | Bring the copilot's risk within appetite: EAL under $1M and P90 under about $5M, once agreed by the Risk Committee |
+| BO-3 | Protect the productivity case: friction cost under 10% of the ~$2M hard value (about $200K a year) |
+| BO-4 | Have compliance evidence (NIST AI RMF, ISO/IEC 42001, EU AI Act, NYDFS Part 500, SR 26-2) ready for the NYDFS certification on 15 April 2027 and before the Luxembourg go-live in July 2027 |
+| BO-5 | Fund only controls that pay off: each returns at least 3:1, and the total fits the ~$400K budget unless the return justifies more |
 
 ---
 
@@ -312,7 +312,7 @@ The block-rate target is a hygiene check on our own suite, not proof of real-wor
 
 | Metric | Target | BO |
 |---|---|---|
-| Modeled EAL reduction, all controls on vs. baseline | ≥ 60% | BO-2 |
+| Modeled EAL and P90 with recommended controls | EAL < $1M, P90 < ~$5M | BO-2 |
 | CISO can answer "what's our exposure and what should we fund?" from the executive view | In a 3-minute demo, unaided | BO-1, BO-5 |
 | Controls ranked by ROI, with friction included | All 5 guardrails | BO-5 |
 | In-scope controls mapped with verified citations | 100% | BO-4 |
@@ -406,11 +406,11 @@ The block-rate target is a hygiene check on our own suite, not proof of real-wor
 | ID | Question | Resolved by |
 |---|---|---|
 | Q-1 | ~~Bank name, size, number of RMs, query volume~~ | Resolved 2026-10-23: Brindlemoor Trust, see `docs/00-scenario.md` |
-| Q-2 | Are BO-1 to BO-5 and the 60% target right? | BRD |
+| Q-2 | ~~Are BO-1 to BO-5 and the 60% target right?~~ | Resolved 2026-10-25: replaced by BRD §3 |
 | Q-3 | ~~What is the Bank's risk appetite for this copilot?~~ | Partly resolved 2026-10-25 in the CISO interview: EAL under $1M and P90 under about $5M. These are Daniel's personal thresholds, not yet agreed by the Risk Committee; the BRD formalizes them. |
 | Q-6 | Does the cyber insurance policy cover AI-related incidents? | CFO / insurance broker; BRD |
 | Q-7 | What do the 150 commercial bankers need, given that they handle company financials rather than personal portfolios? | Interview with a commercial banking lead before PRD sign-off |
-| Q-5 | Should BO-2 ("reduce EAL by at least 60%") be replaced by "bring EAL within risk appetite"? | BRD |
+| Q-5 | ~~Should BO-2 ("reduce EAL by at least 60%") be replaced by "bring EAL within risk appetite"?~~ | Resolved 2026-10-25: BRD BO-2 uses the risk appetite |
 | Q-4 | ~~Confirm decisions D-1 to D-6~~ | Resolved 2026-10-23, see §6 |
 
 ---
