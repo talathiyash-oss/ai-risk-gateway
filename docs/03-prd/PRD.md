@@ -330,6 +330,8 @@ The block-rate target is a hygiene check on our own suite, not proof of real-wor
 |---|---|
 | A-1 | BO-1 to BO-5 reflect the Bank's priorities (to be confirmed in the BRD) |
 | A-2 | D-4 hourly cost and minutes-lost ranges are reasonable for a US regional bank (hourly cost to be benchmarked in the BRD) |
+| A-5 | Year-one budget for AI security controls is about $400K (CISO interview, 2026-10-25); total recommended control cost should fit within it, or the ROI case must justify more |
+| A-6 | The permission-aware search index fix (FR-31) is about three months away and won't be ready for the January 2027 pilot, so the gateway serves as the interim control (CISO interview) |
 | A-4 | Adaptive-attacker degradation of 0% / 15% / 40% is a reasonable starting assumption (D-5); shown as Assumed and adjustable in FR-28 |
 | A-3 | Public breach-cost benchmarks for the financial sector are a fair basis for loss magnitude |
 
@@ -371,7 +373,8 @@ The block-rate target is a hygiene check on our own suite, not proof of real-wor
 |---|---|---|
 | Q-1 | ~~Bank name, size, number of RMs, query volume~~ | Resolved 2026-10-23: Brindlemoor Trust, see `docs/00-scenario.md` |
 | Q-2 | Are BO-1 to BO-5 and the 60% target right? | BRD |
-| Q-3 | What is the Bank's risk appetite for this copilot (a maximum acceptable EAL)? | BRD; CISO interview |
+| Q-3 | ~~What is the Bank's risk appetite for this copilot?~~ | Partly resolved 2026-10-25 in the CISO interview: EAL under $1M and P90 under about $5M. These are Daniel's personal thresholds, not yet agreed by the Risk Committee; the BRD formalizes them. |
+| Q-5 | Should BO-2 ("reduce EAL by at least 60%") be replaced by "bring EAL within risk appetite"? | BRD |
 | Q-4 | ~~Confirm decisions D-1 to D-6~~ | Resolved 2026-10-23, see §6 |
 
 ---
