@@ -32,3 +32,16 @@ def make_config():
 def redactor():
     from airg.redaction import get_redactor
     return get_redactor()
+
+
+class FakeClock:
+    def __init__(self, t: float = 1_000_000.0):
+        self.t = t
+
+    def __call__(self) -> float:
+        return self.t
+
+
+@pytest.fixture
+def clock():
+    return FakeClock()
