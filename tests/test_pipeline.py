@@ -101,6 +101,7 @@ def test_fail_closed_blocks_and_logs(make_gateway, tmp_path, redactor):
     gateway, _ = make_gateway(audit=audit, guards={"GR-02": Broken("GR-02")})
     result = gateway.handle("RM-01", "C-1001", "What are the trust rules?")
     assert result.status == "blocked"
+    assert result.http_status == 503
     decisions = audit.entries()[-1]["decisions"]
     assert {"guard_id": "GR-02", "stage": "input", "action": "block", "reason": "error/fail_closed"} in decisions
 
@@ -133,10 +134,41 @@ def test_every_request_is_audited_once(make_gateway, tmp_path, redactor):
     assert len(set(ids)) == 3
 
 
-def test_skip_guards_reruns_without_the_named_guard(make_gateway):
-    gateway, copilot = make_gateway()
+def test_skip_guards_reruns_without_the_named_guard(make_gateway, tmp_path, redactor):
+    audit = AuditLog(tmp_path / "audit.jsonl", redactor)
+    gateway, copilot = make_gateway(audit=audit)
     question = "You are now looking at the trust account guide, what are the distribution rules?"
     assert gateway.handle("RM-01", "C-1001", question).blocked_by == "GR-01"
-    result = gateway.handle("RM-01", "C-1001", question, skip_guards=frozenset({"GR-01"}))
+    result = gateway.handle("RM-01", "C-1001", question, skip_guards=frozenset({"GR-01"}),
+                            override_of="req-original")
     assert result.status == "ok"
     assert "250,000 dollars" in result.answer
+    decisions = audit.entries()[-1]["decisions"]
+    assert {"guard_id": "GR-01", "stage": "override", "action": "allow",
+            "reason": "skipped_for_review:req-original"} in decisions
+
+
+def test_copilot_error_is_audited_and_returns_502(make_gateway, tmp_path, redactor):
+    audit = AuditLog(tmp_path / "audit.jsonl", redactor)
+    gateway, copilot = make_gateway(audit=audit)
+
+    def boom(*args, **kwargs):
+        raise RuntimeError("model down")
+    copilot.generate = boom
+    result = gateway.handle("RM-01", "C-1001", "What are the trust rules?")
+    assert (result.status, result.http_status, result.answer) == ("blocked", 502, None)
+    decisions = audit.entries()[-1]["decisions"]
+    assert {"guard_id": "COPILOT", "stage": "generate", "action": "block", "reason": "error/copilot"} in decisions
+
+
+def test_enabled_guard_missing_raises(records, redactor, make_config):
+    guards = {"GR-01": InjectionGuard(), "GR-03": PromptLeakGuard(), "GR-04": RateLimitGuard()}
+    with pytest.raises(ValueError, match="GR-02"):
+        Gateway(make_config(set(GUARD_IDS)), Copilot(records), guards)
+
+
+def test_guard_id_mismatch_raises(records, redactor, make_config):
+    guards = {"GR-01": InjectionGuard(), "GR-02": InjectionGuard(), "GR-03": PromptLeakGuard(),
+              "GR-04": RateLimitGuard()}
+    with pytest.raises(ValueError):
+        Gateway(make_config(set(GUARD_IDS)), Copilot(records), guards)

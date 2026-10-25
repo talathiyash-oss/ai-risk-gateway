@@ -38,6 +38,12 @@ class Gateway:
         self._copilot = copilot
         self._audit = audit if config.guardrails["GR-05"].enabled else None
         self._new_id = id_factory or (lambda: uuid.uuid4().hex[:12])
+        for guard_id in GUARD_ORDER:
+            if config.guardrails[guard_id].enabled:
+                if guard_id not in guards:
+                    raise ValueError(f"{guard_id} is enabled but no guard was provided")
+                if guards[guard_id].guard_id != guard_id:
+                    raise ValueError(f"guard registered as {guard_id} reports id {guards[guard_id].guard_id}")
         self._guards = [guards[g] for g in GUARD_ORDER if g in guards and config.guardrails[g].enabled]
         for guard_id in GUARD_IDS:
             logger.info("%s %s", guard_id, "enabled" if config.guardrails[guard_id].enabled else "disabled")
@@ -49,11 +55,20 @@ class Gateway:
         return GuardResult(guard_id, stage, action, f"error/fail_{mode}")
 
     def handle(self, user_id: str, client_id: str, message: str,
-               skip_guards: frozenset[str] = frozenset()) -> GatewayResult:
+               skip_guards: frozenset[str] = frozenset(),
+               override_of: str | None = None) -> GatewayResult:
+        """Run one request through the enabled guardrails and the copilot.
+
+        An output-stage block logs response=None on purpose, so a leaked system prompt is not
+        persisted. skip_guards removes the guard from every stage and is recorded in the audit
+        log as an override (stage "override", referencing override_of).
+        """
         ctx = RequestContext(self._new_id(), user_id, client_id)
         start = time.perf_counter()
         guards = [g for g in self._guards if g.guard_id not in skip_guards]
-        decisions: list[GuardResult] = []
+        decisions: list[GuardResult] = [
+            GuardResult(g, "override", Action.ALLOW, f"skipped_for_review:{override_of}")
+            for g in sorted(skip_guards)]
 
         text = message
         for guard in guards:
@@ -63,11 +78,14 @@ class Gateway:
                 result = self._failure(guard.guard_id, "input")
             decisions.append(result)
             if result.action is Action.BLOCK:
-                return self._finish(ctx, decisions, start, text, None, blocked_by=result.guard_id)
+                return self._finish(ctx, decisions, start, text, None, blocking=result)
             if result.action is Action.REDACT and result.text is not None:
                 text = result.text
 
-        chunks = self._copilot.retrieve(text, client_id)
+        try:
+            chunks = self._copilot.retrieve(text, client_id)
+        except Exception:
+            return self._copilot_failure(ctx, decisions, start, text, "retrieve")
         for guard in guards:
             try:
                 chunks, results = guard.check_chunks(ctx, chunks)
@@ -76,9 +94,12 @@ class Gateway:
             decisions.extend(results)
             blocking = next((r for r in results if r.action is Action.BLOCK), None)
             if blocking is not None:
-                return self._finish(ctx, decisions, start, text, None, blocked_by=blocking.guard_id)
+                return self._finish(ctx, decisions, start, text, None, blocking=blocking)
 
-        answer = self._copilot.generate(text, client_id, chunks)
+        try:
+            answer = self._copilot.generate(text, client_id, chunks)
+        except Exception:
+            return self._copilot_failure(ctx, decisions, start, text, "generate")
         for guard in guards:
             try:
                 result = guard.check_output(ctx, answer)
@@ -86,14 +107,21 @@ class Gateway:
                 result = self._failure(guard.guard_id, "output")
             decisions.append(result)
             if result.action is Action.BLOCK:
-                return self._finish(ctx, decisions, start, text, None, blocked_by=result.guard_id)
+                return self._finish(ctx, decisions, start, text, None, blocking=result)
             if result.action is Action.REDACT and result.text is not None:
                 answer = result.text
 
         return self._finish(ctx, decisions, start, text, answer)
 
+    def _copilot_failure(self, ctx, decisions, start, prompt, stage):
+        logger.exception("Copilot failed at %s stage", stage)
+        result = GuardResult("COPILOT", stage, Action.BLOCK, "error/copilot")
+        decisions.append(result)
+        return self._finish(ctx, decisions, start, prompt, None, blocking=result)
+
     def _finish(self, ctx: RequestContext, decisions: list[GuardResult], start: float, prompt: str,
-                answer: str | None, blocked_by: str | None = None) -> GatewayResult:
+                answer: str | None, blocking: GuardResult | None = None) -> GatewayResult:
+        blocked_by = blocking.guard_id if blocking else None
         latency_ms = (time.perf_counter() - start) * 1000
         if blocked_by:
             final = "block"
@@ -110,6 +138,9 @@ class Gateway:
                 if self._config.guardrails["GR-05"].fail_mode == "closed":
                     return GatewayResult(ctx.request_id, "blocked", None, 503, blocked_by="GR-05")
         if blocked_by:
-            http_status = 429 if blocked_by == "GR-04" else 403
+            if blocking.reason.startswith("error/"):
+                http_status = 502 if blocked_by == "COPILOT" else 503
+            else:
+                http_status = 429 if blocked_by == "GR-04" else 403
             return GatewayResult(ctx.request_id, "blocked", None, http_status, blocked_by=blocked_by)
         return GatewayResult(ctx.request_id, "ok", answer, 200)
