@@ -4,13 +4,16 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from airg.config import load_config
 from airg.data import generate_clients, load_clients
 from airg.pipeline import BLOCK_MESSAGE, RATE_LIMIT_MESSAGE
+from airg.reviews import (ReviewAlreadyDecided, ReviewExpired, ReviewInProgress, ReviewNotFound,
+                          SelfReviewNotAllowed)
 from airg.services import Services, build_services
 
 
@@ -20,7 +23,7 @@ ERROR_MESSAGE = "Something went wrong. Reference: {request_id}. Please try again
 class ChatRequest(BaseModel):
     user_id: str
     client_id: str
-    message: str
+    message: str = Field(min_length=1, max_length=4000)
 
 
 class ReviewRequest(BaseModel):
@@ -36,6 +39,10 @@ class ReviewDecision(BaseModel):
 def create_app(services: Services) -> FastAPI:
     app = FastAPI(title="AI Risk Gateway")
     gateway, reviews = services.gateway, services.reviews
+
+    @app.exception_handler(RequestValidationError)
+    def invalid_request(request: Request, exc: RequestValidationError):
+        return JSONResponse(status_code=422, content={"message": "Invalid request"})
 
     @app.post("/v1/chat")
     def chat(req: ChatRequest):
@@ -60,14 +67,14 @@ def create_app(services: Services) -> FastAPI:
     def request_review(req: ReviewRequest):
         try:
             return reviews.public_view(reviews.request(req.request_id, req.user_id))
-        except LookupError:
+        except ReviewNotFound:
             raise HTTPException(status_code=404, detail="No reviewable request found")
 
     @app.get("/v1/reviews/{review_id}")
     def get_review(review_id: str, user_id: str):
         try:
             return reviews.public_view(reviews.get(review_id, user_id))
-        except LookupError:
+        except ReviewNotFound:
             raise HTTPException(status_code=404, detail="Review not found")
 
     @app.post("/v1/reviews/{review_id}/decision")
@@ -75,11 +82,16 @@ def create_app(services: Services) -> FastAPI:
         # NOTE: reviewer identity is not authenticated in the prototype (auth/SSO out of scope, PRD §9).
         try:
             return reviews.public_view(reviews.decide(review_id, body.reviewer_id, body.approve))
-        except LookupError:
+        except ReviewNotFound:
             raise HTTPException(status_code=404, detail="Review not found")
-        except ValueError:
+        except ReviewExpired:
+            raise HTTPException(status_code=410,
+                                detail="This request has expired. Please ask the RM to resubmit it.")
+        except ReviewAlreadyDecided:
             raise HTTPException(status_code=409, detail="Review already decided")
-        except PermissionError:
+        except ReviewInProgress:
+            raise HTTPException(status_code=409, detail="Review is being processed")
+        except SelfReviewNotAllowed:
             raise HTTPException(status_code=403, detail="Reviewers cannot decide their own requests")
 
     return app

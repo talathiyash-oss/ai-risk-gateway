@@ -14,6 +14,36 @@ from typing import Callable
 from airg.pipeline import Gateway, GatewayResult
 
 
+class ReviewNotFound(LookupError):
+    pass
+
+
+class ReviewExpired(LookupError):
+    pass
+
+
+class ReviewAlreadyDecided(ValueError):
+    pass
+
+
+class ReviewInProgress(ValueError):
+    pass
+
+
+class SelfReviewNotAllowed(PermissionError):
+    pass
+
+
+_MESSAGES = {
+    "pending": "Waiting for a reviewer (target {n} minutes).",
+    "approved": "Approved.",
+    "rejected": "The review was declined.",
+    "rerun_blocked": "Approved, but the answer still couldn't be released. Please contact support with your reference.",
+    "expired": "This request expired before review. Please ask your question again.",
+    "deciding": "Being reviewed now.",
+}
+
+
 @dataclass
 class Review:
     review_id: str
@@ -76,11 +106,11 @@ class ReviewQueue:
             if existing_id is not None:
                 existing = self._reviews[existing_id]
                 if existing.user_id != user_id:
-                    raise LookupError(f"No reviewable request {request_id} for {user_id}")
+                    raise ReviewNotFound(f"No reviewable request {request_id} for {user_id}")
                 return existing
             held = self._held.get(request_id)
             if held is None or held.user_id != user_id:
-                raise LookupError(f"No reviewable request {request_id} for {user_id}")
+                raise ReviewNotFound(f"No reviewable request {request_id} for {user_id}")
             review = Review(self._new_id(), request_id, user_id, held.client_id, held.blocked_by, self._clock())
             self._reviews[review.review_id] = review
             self._by_request[request_id] = review.review_id
@@ -92,22 +122,36 @@ class ReviewQueue:
         with self._lock:
             review = self._reviews.get(review_id)
             if review is None or review.user_id != user_id:
-                raise LookupError(f"No review {review_id} for {user_id}")
+                raise ReviewNotFound(f"No review {review_id} for {user_id}")
             return review
 
     def decide(self, review_id: str, reviewer_id: str, approve: bool) -> Review:
         with self._lock:
             review = self._reviews.get(review_id)
             if review is None:
-                raise LookupError(f"No review {review_id}")
+                raise ReviewNotFound(f"No review {review_id}")
+            if review.status == "deciding":
+                raise ReviewInProgress(f"Review {review_id} is being processed")
             if review.status != "pending":
-                raise ValueError(f"Review {review_id} already {review.status}")
+                raise ReviewAlreadyDecided(f"Review {review_id} already {review.status}")
             if reviewer_id == review.user_id:
-                raise PermissionError("A requester cannot decide their own review")
+                raise SelfReviewNotAllowed("A requester cannot decide their own review")
+            self._purge()
             held = self._held.get(review.request_id)
             if approve and held is None:
-                raise LookupError(f"Held request {review.request_id} is no longer available")
-            review.status = "deciding"
+                decided_at = self._clock()
+                review.status = "expired"
+                review.reviewer_id = reviewer_id
+                review.decided_at = decided_at
+                expired = True
+            else:
+                expired = False
+                review.status = "deciding"
+        if expired:
+            self._log("review_decided", review_id=review_id, request_id=review.request_id,
+                      reviewer_id=reviewer_id, decision="expired",
+                      minutes_taken=round((decided_at - review.created_at) / 60, 2))
+            raise ReviewExpired(f"Held request {review.request_id} is no longer available")
 
         rerun = None
         try:
@@ -144,7 +188,8 @@ class ReviewQueue:
     def public_view(self, review: Review) -> dict:
         return {"review_id": review.review_id, "request_id": review.request_id, "status": review.status,
                 "target_minutes": self.target_minutes,
-                "answer": review.answer if review.status == "approved" else None}
+                "answer": review.answer if review.status == "approved" else None,
+                "message": _MESSAGES[review.status].format(n=self.target_minutes)}
 
     def _log(self, event: str, **fields) -> None:
         if self._audit is not None:

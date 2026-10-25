@@ -35,7 +35,8 @@ def test_request_review_for_blocked_request(setup):
     result = blocked_and_held(gateway, queue)
     review = queue.request(result.request_id, "RM-01")
     assert queue.public_view(review) == {"review_id": review.review_id, "request_id": result.request_id,
-                                         "status": "pending", "target_minutes": 15, "answer": None}
+                                         "status": "pending", "target_minutes": 15, "answer": None,
+                                         "message": "Waiting for a reviewer (target 15 minutes)."}
     last = audit.entries()[-1]
     assert (last["event"], last["request_id"], last["target_minutes"]) == ("review_requested", result.request_id, 15)
 
@@ -182,3 +183,20 @@ def test_duplicate_request_returns_same_review(setup):
     assert queue.request(result.request_id, "RM-01") is first
     with pytest.raises(LookupError):
         queue.request(result.request_id, "RM-99")
+
+
+def test_dedicated_exceptions_and_expiry(setup, clock):
+    from airg.reviews import ReviewAlreadyDecided, ReviewExpired, ReviewNotFound, SelfReviewNotAllowed
+    gateway, queue, audit = setup
+    review = queue.request(blocked_and_held(gateway, queue).request_id, "RM-01")
+    with pytest.raises(SelfReviewNotAllowed):
+        queue.decide(review.review_id, "RM-01", approve=True)
+    with pytest.raises(ReviewNotFound):
+        queue.decide("rv-nope", "REVIEWER-1", approve=True)
+    clock.t += 86_401
+    with pytest.raises(ReviewExpired):
+        queue.decide(review.review_id, "REVIEWER-1", approve=True)
+    assert review.status == "expired" and review.reviewer_id == "REVIEWER-1" and review.decided_at
+    assert audit.entries()[-1]["decision"] == "expired"
+    with pytest.raises(ReviewAlreadyDecided):
+        queue.decide(review.review_id, "REVIEWER-1", approve=False)

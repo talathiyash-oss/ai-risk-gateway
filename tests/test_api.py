@@ -1,7 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from airg.api import create_app
+from airg.api import ERROR_MESSAGE, create_app
 from airg.config import GUARD_IDS, GuardConfig
 from airg.pipeline import BLOCK_MESSAGE, RATE_LIMIT_MESSAGE
 from airg.services import build_services
@@ -61,12 +61,18 @@ def test_review_flow_over_http(client):
     pending = client.get(f"/v1/reviews/{review['review_id']}", params={"user_id": "RM-01"}).json()
     assert pending["answer"] is None
 
+    bodies = [created.text, str(pending)]
     decided = client.post(f"/v1/reviews/{review['review_id']}/decision",
                           json={"reviewer_id": "REVIEWER-1", "approve": True})
     assert decided.status_code == 200
+    bodies.append(decided.text)
     final = client.get(f"/v1/reviews/{review['review_id']}", params={"user_id": "RM-01"}).json()
     assert final["status"] == "approved"
     assert "250,000 dollars" in final["answer"]
+    bodies.append(str(final))
+    for body in bodies:
+        for leak in ["GR-", "blocked_by", "override"]:
+            assert leak not in body
 
 
 def test_unknown_request_review_is_404(client):
@@ -79,3 +85,59 @@ def test_other_rm_cannot_read_review(client):
     review = client.post("/v1/reviews", json={"request_id": blocked["request_id"], "user_id": "RM-01"}).json()
     response = client.get(f"/v1/reviews/{review['review_id']}", params={"user_id": "RM-99"})
     assert response.status_code == 404
+
+
+def _review(client):
+    blocked = chat(client, FALSE_POSITIVE).json()
+    return client.post("/v1/reviews", json={"request_id": blocked["request_id"], "user_id": "RM-01"}).json()
+
+
+def _decide(client, review_id, reviewer="REVIEWER-1", approve=True):
+    return client.post(f"/v1/reviews/{review_id}/decision", json={"reviewer_id": reviewer, "approve": approve})
+
+
+def test_decision_twice_is_409(client):
+    review = _review(client)
+    assert _decide(client, review["review_id"]).status_code == 200
+    assert _decide(client, review["review_id"]).status_code == 409
+
+
+def test_self_approval_is_403(client):
+    assert _decide(client, _review(client)["review_id"], reviewer="RM-01").status_code == 403
+
+
+def test_decision_on_unknown_review_is_404(client):
+    assert _decide(client, "rv-nope").status_code == 404
+
+
+def test_expired_held_request_is_410_then_expired(records, redactor, tmp_path, make_config, clock):
+    client = TestClient(create_app(build_services(make_config(set(GUARD_IDS)), records,
+                                                  audit_path=tmp_path / "a.jsonl", redactor=redactor,
+                                                  clock=clock)))
+    review = _review(client)
+    clock.t += 86_401
+    assert _decide(client, review["review_id"]).status_code == 410
+    final = client.get(f"/v1/reviews/{review['review_id']}", params={"user_id": "RM-01"}).json()
+    assert final["status"] == "expired"
+    assert final["answer"] is None
+
+
+def test_oversized_message_is_422_without_echo(client):
+    response = chat(client, "x" * 5001)
+    assert response.status_code == 422
+    assert response.json() == {"message": "Invalid request"}
+
+
+def test_copilot_error_returns_generic_message(records, redactor, tmp_path, make_config, monkeypatch):
+    services = build_services(make_config(set(GUARD_IDS)), records,
+                              audit_path=tmp_path / "a.jsonl", redactor=redactor)
+
+    def boom(*args, **kwargs):
+        raise RuntimeError("upstream down")
+
+    monkeypatch.setattr(services.copilot, "generate", boom)
+    response = chat(TestClient(create_app(services)), "What are the trust account rules for distributions?")
+    assert response.status_code == 502
+    body = response.json()
+    assert body["message"] == ERROR_MESSAGE.format(request_id=body["request_id"])
+    assert body["review_available"] is False
