@@ -55,7 +55,17 @@ def main() -> None:
         review = on.reviews.request(result.request_id, "RM-01")
         print(f"  RM requests review {review.review_id}: {review.status}, target {on.reviews.target_minutes} min")
         review = on.reviews.decide(review.review_id, "REVIEWER-1", approve=True)
-        print(f"  Reviewer approves -> RM receives: {review.answer[:90]}...")
+        answer = review.answer or ""
+        start = answer.find("Trust account guide")
+        if start >= 0:
+            end = answer.find(". ", start)
+            sentence = answer[start:end + 2].strip() if end >= 0 else answer[start:].strip()
+            print(f"  Reviewer approves -> RM receives the trust rule: {sentence}")
+        else:
+            print(f"  Reviewer approves -> RM receives: {answer[:90]}...")
+        others = {r.account_number for r in records if r.client_id != client_id}
+        leaked = others & set(re.findall(r"BMT-\d{8}", answer))
+        print(f"  Other clients' data in the released answer: {'LEAKED' if leaked else 'redacted'}")
 
         print(f"\nAudit log entries written with gateway on: {len(on.audit.entries())}")
 
