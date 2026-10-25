@@ -21,4 +21,4 @@
 
 ## Synthesis
 
-*To be completed: group the issues into themes, then write the problem statement (`problem-statement.md`).*
+Grouped into three themes. See `problem-statement.md`.
