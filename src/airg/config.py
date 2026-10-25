@@ -31,12 +31,19 @@ def _parse(raw: dict) -> GatewayConfig:
         raise ValueError(f"Unknown guardrail(s) in config: {', '.join(unknown)}")
     guardrails = {}
     for guard_id in GUARD_IDS:
-        entry = section.get(guard_id) or {}
+        entry = section.get(guard_id)
+        if entry is None:
+            entry = {}
+        if not isinstance(entry, dict):
+            raise ValueError(f"{guard_id}: settings must be a mapping")
+        enabled = entry.get("enabled", True)
+        if not isinstance(enabled, bool):
+            raise ValueError(f"{guard_id}: enabled must be true or false, got {enabled!r}")
         fail_mode = entry.get("fail_mode", DEFAULT_FAIL_MODES[guard_id])
         if fail_mode not in FAIL_MODES:
             raise ValueError(f"{guard_id}: fail_mode must be one of {FAIL_MODES}, got {fail_mode!r}")
         options = {k: v for k, v in entry.items() if k not in ("enabled", "fail_mode")}
-        guardrails[guard_id] = GuardConfig(bool(entry.get("enabled", True)), fail_mode, options)
+        guardrails[guard_id] = GuardConfig(enabled, fail_mode, options)
     reviews = raw.get("reviews") or {}
     return GatewayConfig(guardrails, int(reviews.get("target_minutes", 15)))
 

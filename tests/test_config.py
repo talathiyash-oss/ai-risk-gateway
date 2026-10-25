@@ -43,3 +43,17 @@ def test_repo_config_loads():
     cfg = load_config("config/gateway.yaml")
     assert cfg.guardrails["GR-04"].fail_mode == "open"
     assert cfg.guardrails["GR-04"].options["requests_per_minute"] == 20
+
+
+def test_rejects_non_boolean_enabled(tmp_path):
+    path = tmp_path / "gw.yaml"
+    path.write_text('guardrails:\n  GR-02:\n    enabled: "false"\n')
+    with pytest.raises(ValueError, match="enabled"):
+        load_config(path)
+
+
+def test_rejects_non_mapping_entry(tmp_path):
+    path = tmp_path / "gw.yaml"
+    path.write_text("guardrails:\n  GR-01: true\n")
+    with pytest.raises(ValueError, match="GR-01"):
+        load_config(path)
