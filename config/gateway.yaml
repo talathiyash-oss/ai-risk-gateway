@@ -1,0 +1,23 @@
+# AI Risk Gateway configuration (PRD FR-02, FR-04, decisions D-1 and D-7)
+guardrails:
+  GR-01:   # prompt injection (OWASP LLM01)
+    enabled: true
+    fail_mode: closed
+  GR-02:   # PII and cross-client leakage (OWASP LLM02)
+    enabled: true
+    fail_mode: closed
+  GR-03:   # system prompt leakage (OWASP LLM07)
+    enabled: true
+    fail_mode: closed
+  GR-04:   # rate limits (OWASP LLM10)
+    enabled: true
+    fail_mode: open
+    requests_per_minute: 20
+    tokens_per_day: 50000
+  GR-05:   # audit log
+    enabled: true
+    fail_mode: closed
+    log_path: logs/audit.jsonl
+    retention_days: 395   # placeholder (13 months); Compliance sets the real period
+reviews:
+  target_minutes: 15

@@ -4,7 +4,7 @@
 
 | Field | Value |
 |---|---|
-| Version | 0.3 (draft) |
+| Version | 0.4 (draft) |
 | Status | Draft for product owner review |
 | Product owner | Yash Talathi |
 | Approvers | CISO, Head of Compliance, RM lead, Engineering lead |
@@ -17,6 +17,7 @@
 | 0.1 | 2026-10-23 | First draft |
 | 0.2 | 2026-10-23 | Product owner confirmed D-1 to D-6. Test suite resized and split 60/40 (D-3). Friction inputs became ranges linked to the scenario doc (D-4). Effectiveness haircut split into measured and assumed parts (D-5). FR-31 promoted to Should (D-6). |
 | 0.3 | 2026-10-25 | Updated from stakeholder interviews. CFO: 3:1 funding test, alternatives comparison (FR-33), no insurance recovery, budget-lock risk. Compliance: log minimization and retention, model-risk and deadline risks, DPIA dependency, EU AI Act memo. RM lead: D-2 cap tightened to 1% / 2%; fast review path in scope (D-7, FR-34); shadow AI scenario S5 linked to friction (D-8, FR-35). |
+| 0.4 | 2026-10-25 | Sprint 1 final review: D-9 (GR-02 enforces entitlements at chunk stage, new FR-08 criterion); FR-34 narrowed to GR-01 blocks, stage-scoped reruns, no self-approval. |
 
 ---
 
@@ -121,6 +122,7 @@ Detect and redact PII in prompts using Presidio, including custom recognizers fo
 **FR-08 Cross-client leak check** (US-03) Must
 Each request carries the client ID the RM is working on. The response may reference only that client.
 - *Given* GR-02 is on and the session client is C-1001, *when* the copilot response contains an account number belonging to C-2002, *then* that account number is redacted and a GR-02 event is logged with both client IDs.
+- *Given* GR-02 is on and the session client is C-1001, *when* retrieval returns records belonging to other clients, *then* those records are removed before the copilot generates its answer, and a GR-02 entitlement event is logged listing the removed record IDs, which contain the client IDs (D-9).
 
 ### 4.4 GR-03 System Prompt Leakage (OWASP LLM07)
 
@@ -245,10 +247,11 @@ A switchable option in the simulated copilot: when on, it only retrieves records
 - *Given* the harness and FAIR engine have run all four strategies, *when* the CISO opens the control view, *then* S1 EAL, control cost and ROI are shown side by side for each strategy.
 
 **FR-34 Review request for blocked RMs** (US-16) Must (D-7)
-A blocked RM can request a review from the block message. The block stays in place until a reviewer decides. In the prototype, the reviewer is a simulated queue.
+A blocked RM can request a review from the block message. The block stays in place until a reviewer decides. In the prototype, the reviewer is a simulated queue. **Only GR-01 prompt-injection blocks are reviewable** (the false-positive case D-7 exists for). GR-03 system-prompt blocks are final. Rate limits and errors are not reviewable. An approved review reruns the request skipping only the guardrail *and stage* that blocked it; every other check still applies, and the skip is recorded in the audit log. Reviewers cannot approve their own requests.
 - *Given* a request is blocked, *when* the RM selects "request review," *then* a review request is created with the block's reference ID, the RM sees its status and the target response time (configurable, default 15 minutes), and the request is logged under GR-05.
 - *Given* a review request, *when* the reviewer approves it, *then* the RM receives the answer, and the log records the reviewer, decision and time taken.
 - *Given* a review request, *when* it is open, *then* the RM cannot see the original response until it is approved (no self-override).
+- *Given* a request blocked by GR-03, *when* the RM sees the block message, *then* no review is offered and a review request returns not found.
 
 **FR-35 Shadow AI scenario S5, linked to friction** (US-17) Must (D-8)
 Scenario S5: an RM pastes client data into an unapproved external AI tool. S5's threat event frequency rises with the gateway's combined false-block rate:
@@ -290,6 +293,7 @@ All decisions confirmed by the product owner on 2026-10-23.
 | D-5 | Effectiveness haircut | Fixed multipliers; confidence interval only; interval + attacker factor | **Confidence interval [Measured] × adaptive-attacker degradation 0% / 15% / 40% [Assumed], shown separately** | Separates measurement noise, which statistics can handle, from attacker adaptation, which only judgment can. Avoids arbitrary multipliers and lets the CISO test the assumption in the what-if view (FR-28). |
 | D-7 | Fast path for blocked RMs | Review without override; RM self-override with reason; out of scope | **Review without override (FR-34)**: block stands until a reviewer decides; target 15 minutes | The RM lead said dead ends, not blocks, make RMs give up. Compliance wants blocks to hold. A review path keeps the control and removes the dead end. |
 | D-8 | Shadow AI | Scenario linked to friction; fixed-rate scenario; note only | **New scenario S5, frequency linked to the false-block rate (FR-35)** | A third of pilot RMs already paste client data into personal ChatGPT. Linking S5 to friction puts a dollar figure on the risk cost of over-blocking, so the trade-off between Compliance and the RM lead is settled by the model. |
+| D-9 | Other clients' records retrieved by the copilot | Redact identifiers only; drop whole records at the chunk stage | **GR-02 drops other clients' records before generation**, keeping output redaction as defence in depth | The Sprint 1 final review showed that redacting names and account numbers still let other clients' balances, products and notes reach the RM: the October incident without the name. The gateway sits between retrieval and generation, so it can enforce entitlements there. Consequence for FR-31: the upstream index fix and GR-02 now give similar protection at different points and costs, so the Sprint 2 comparison is about cost and defence in depth, not root cause vs. symptom. Decided 2026-10-25. |
 | D-6 | Stretch items | Both later; FR-31 Should and FR-30 later; both Should | **FR-31 promoted to Should. FR-30 stays Could and is decided at the end of Sprint 2.** | FR-31 costs little in a simulated copilot, and it lets the FAIR engine compare fixing the root cause upstream with catching the symptom at the gateway. |
 
 ---
