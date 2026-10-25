@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 
 from airg.config import load_config
 from airg.data import generate_clients, load_clients
-from airg.pipeline import BLOCK_MESSAGE, RATE_LIMIT_MESSAGE
+from airg.pipeline import BLOCK_MESSAGE, NOT_REVIEWABLE_MESSAGE, RATE_LIMIT_MESSAGE
 from airg.reviews import (ReviewAlreadyDecided, ReviewExpired, ReviewInProgress, ReviewNotFound,
                           SelfReviewNotAllowed)
 from airg.services import Services, build_services
@@ -49,13 +49,13 @@ def create_app(services: Services) -> FastAPI:
         result = gateway.handle(req.user_id, req.client_id, req.message)
         if result.status == "ok":
             return {"request_id": result.request_id, "status": "ok", "answer": result.answer}
-        reviewable = result.http_status == 403
-        if reviewable:
-            reviews.hold(result, req.user_id, req.client_id, req.message)
+        reviewable = reviews.hold(result, req.user_id, req.client_id, req.message)
         if result.http_status == 429:
             template = RATE_LIMIT_MESSAGE
         elif reviewable:
             template = BLOCK_MESSAGE
+        elif result.http_status == 403:
+            template = NOT_REVIEWABLE_MESSAGE
         else:
             template = ERROR_MESSAGE
         return JSONResponse(status_code=result.http_status, content={

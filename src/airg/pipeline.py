@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 GUARD_ORDER = ("GR-04", "GR-01", "GR-03", "GR-02")
 BLOCK_MESSAGE = "This request can't be completed. Reference: {request_id}. You can request a review."
 RATE_LIMIT_MESSAGE = "Too many requests. Reference: {request_id}. Please wait a minute and try again."
+NOT_REVIEWABLE_MESSAGE = "This request can't be completed. Reference: {request_id}."
 
 
 @dataclass(frozen=True)
@@ -29,6 +30,7 @@ class GatewayResult:
     answer: str | None
     http_status: int
     blocked_by: str | None = None  # internal only; never sent to the RM (NFR-06)
+    blocked_stage: str | None = None  # internal only
 
 
 class Gateway:
@@ -122,6 +124,7 @@ class Gateway:
     def _finish(self, ctx: RequestContext, decisions: list[GuardResult], start: float, prompt: str,
                 answer: str | None, blocking: GuardResult | None = None) -> GatewayResult:
         blocked_by = blocking.guard_id if blocking else None
+        blocked_stage = blocking.stage if blocking else None
         latency_ms = (time.perf_counter() - start) * 1000
         if blocked_by:
             final = "block"
@@ -142,5 +145,6 @@ class Gateway:
                 http_status = 502 if blocked_by == "COPILOT" else 503
             else:
                 http_status = 429 if blocked_by == "GR-04" else 403
-            return GatewayResult(ctx.request_id, "blocked", None, http_status, blocked_by=blocked_by)
+            return GatewayResult(ctx.request_id, "blocked", None, http_status, blocked_by=blocked_by,
+                                 blocked_stage=blocked_stage)
         return GatewayResult(ctx.request_id, "ok", answer, 200)

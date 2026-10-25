@@ -14,6 +14,11 @@ from typing import Callable
 from airg.pipeline import Gateway, GatewayResult
 
 
+# Only GR-01 blocks can be reviewed. Releasing a GR-03 block would hand the system prompt and
+# canary to the RM, and GR-04 / error blocks are not judgement calls.
+REVIEWABLE_GUARDS = frozenset({"GR-01"})
+
+
 class ReviewNotFound(LookupError):
     pass
 
@@ -89,15 +94,18 @@ class ReviewQueue:
         for rid in [r for r, h in self._held.items() if h.held_at <= cutoff]:
             del self._held[rid]
 
-    def hold(self, result: GatewayResult, user_id: str, client_id: str, message: str) -> None:
-        if result.http_status == 403 and result.blocked_by:
-            with self._lock:
-                self._purge()
-                self._held.pop(result.request_id, None)
-                self._held[result.request_id] = _Held(user_id, client_id, message, result.blocked_by,
-                                                      self._clock())
-                while len(self._held) > self._max_held:
-                    del self._held[next(iter(self._held))]
+    def hold(self, result: GatewayResult, user_id: str, client_id: str, message: str) -> bool:
+        """Keep a blocked request for review. Returns True if it was held (i.e. it is reviewable)."""
+        if result.http_status != 403 or result.blocked_by not in REVIEWABLE_GUARDS:
+            return False
+        with self._lock:
+            self._purge()
+            self._held.pop(result.request_id, None)
+            self._held[result.request_id] = _Held(user_id, client_id, message, result.blocked_by,
+                                                  self._clock())
+            while len(self._held) > self._max_held:
+                del self._held[next(iter(self._held))]
+        return True
 
     def request(self, request_id: str, user_id: str) -> Review:
         with self._lock:
