@@ -122,10 +122,11 @@ class ReviewQueue:
             if held is None or held.user_id != user_id:
                 raise ReviewNotFound(f"No reviewable request {request_id} for {user_id}")
             review = Review(self._new_id(), request_id, user_id, held.client_id, held.blocked_by, self._clock())
+            # Fail closed: the review exists only once its audit event is written.
+            self._log("review_requested", review_id=review.review_id, request_id=request_id,
+                      user_id=user_id, target_minutes=self.target_minutes)
             self._reviews[review.review_id] = review
             self._by_request[request_id] = review.review_id
-        self._log("review_requested", review_id=review.review_id, request_id=request_id,
-                  user_id=user_id, target_minutes=self.target_minutes)
         return review
 
     def get(self, review_id: str, user_id: str) -> Review:
@@ -181,18 +182,24 @@ class ReviewQueue:
         else:
             status, answer = "rerun_blocked", None
         decided_at = self._clock()
+        fields = {}
+        if rerun is not None:
+            fields = {"rerun_request_id": rerun.request_id, "rerun_http_status": rerun.http_status}
+        # Fail closed: the decision takes effect only once its audit event is written.
+        try:
+            self._log("review_decided", review_id=review_id, request_id=review.request_id,
+                      reviewer_id=reviewer_id, decision=status,
+                      minutes_taken=round((decided_at - review.created_at) / 60, 2), **fields)
+        except BaseException:
+            with self._lock:
+                review.status = "pending"
+            raise
         with self._lock:
             review.reviewer_id = reviewer_id
             review.decided_at = decided_at
             review.answer = answer
             review.status = status
             self._held.pop(review.request_id, None)
-        fields = {}
-        if rerun is not None:
-            fields = {"rerun_request_id": rerun.request_id, "rerun_http_status": rerun.http_status}
-        self._log("review_decided", review_id=review_id, request_id=review.request_id,
-                  reviewer_id=reviewer_id, decision=status,
-                  minutes_taken=round((decided_at - review.created_at) / 60, 2), **fields)
         return review
 
     def public_view(self, review: Review) -> dict:

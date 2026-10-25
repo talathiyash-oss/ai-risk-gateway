@@ -231,3 +231,33 @@ def test_rerun_skips_only_the_blocked_stage(setup):
             "reason": f"skipped_for_review:input:{review.request_id}"} in rerun["decisions"]
     assert {"guard_id": "GR-01", "stage": "chunks", "action": "redact",
             "reason": "indirect_injection:DOC-FEES-ADDENDUM"} in rerun["decisions"]
+
+
+class FailingAudit:
+    def record_event(self, event, **fields):
+        raise OSError("audit disk full")
+
+
+def test_review_request_is_not_stored_when_audit_fails(setup, clock):
+    from airg.reviews import ReviewNotFound
+    gateway, _, _ = setup
+    queue = ReviewQueue(gateway, FailingAudit(), clock=clock, id_factory=lambda: "rv-fixed")
+    result = blocked_and_held(gateway, queue)
+    with pytest.raises(OSError):
+        queue.request(result.request_id, "RM-01")
+    with pytest.raises(ReviewNotFound):
+        queue.get("rv-fixed", "RM-01")
+
+
+def test_review_decision_is_rolled_back_when_audit_fails(setup):
+    gateway, queue, audit = setup
+    review = queue.request(blocked_and_held(gateway, queue).request_id, "RM-01")
+    queue._audit = FailingAudit()
+    with pytest.raises(OSError):
+        queue.decide(review.review_id, "REVIEWER-1", approve=True)
+    review = queue.get(review.review_id, "RM-01")
+    assert review.status == "pending"
+    assert queue.public_view(review)["answer"] is None
+    assert review.answer is None and review.reviewer_id is None
+    queue._audit = audit
+    assert queue.decide(review.review_id, "REVIEWER-1", approve=True).status == "approved"
