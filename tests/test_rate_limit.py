@@ -30,3 +30,20 @@ def test_daily_token_budget(ctx, clock):
     assert guard.check_input(ctx, "one two three four five six").action is Action.ALLOW
     result = guard.check_input(ctx, "one two three four five six")
     assert (result.action, result.reason) == (Action.BLOCK, "rate_limit:tokens_per_day")
+
+
+def test_blocked_requests_do_not_consume_budget(ctx, clock):
+    guard = RateLimitGuard(requests_per_minute=1, tokens_per_day=10, clock=clock)
+    assert guard.check_input(ctx, "one two three").action is Action.ALLOW
+    assert guard.check_input(ctx, "one two three").action is Action.BLOCK
+    clock.t += 60
+    assert guard.check_input(ctx, "a b c d e f g").action is Action.ALLOW
+
+
+def test_concurrent_requests_respect_the_limit(ctx, clock):
+    from concurrent.futures import ThreadPoolExecutor
+
+    guard = RateLimitGuard(requests_per_minute=50, clock=clock)
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        results = list(pool.map(lambda _: guard.check_input(ctx, "hello"), range(200)))
+    assert sum(r.action is Action.ALLOW for r in results) == 50
