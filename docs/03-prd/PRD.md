@@ -122,7 +122,7 @@ Detect and redact PII in prompts using Presidio, including custom recognizers fo
 **FR-08 Cross-client leak check** (US-03) Must
 Each request carries the client ID the RM is working on. The response may reference only that client.
 - *Given* GR-02 is on and the session client is C-1001, *when* the copilot response contains an account number belonging to C-2002, *then* that account number is redacted and a GR-02 event is logged with both client IDs.
-- *Given* GR-02 is on and the session client is C-1001, *when* retrieval returns records belonging to other clients, *then* those records are removed before the copilot generates its answer, and a GR-02 entitlement event is logged listing the removed client IDs (D-9).
+- *Given* GR-02 is on and the session client is C-1001, *when* retrieval returns records belonging to other clients, *then* those records are removed before the copilot generates its answer, and a GR-02 entitlement event is logged listing the removed record IDs, which contain the client IDs (D-9).
 
 ### 4.4 GR-03 System Prompt Leakage (OWASP LLM07)
 
