@@ -86,13 +86,72 @@ Full RACI: `docs/01-discovery/stakeholders-raci.md`. Disagreements: `docs/01-dis
 
 ## 5. Scope
 
-*Pending.*
+### In scope
+
+- A **quantified risk assessment** of Brindlemoor Assist across **all 300 RMs** and all four business lines: Commercial banking, US Private Wealth, the New York trust company and Brindlemoor Wealth S.A. (Luxembourg). This matches the full rollout the Risk Committee is being asked to fund.
+- **Interim runtime controls** to cover the gap before the search index fix, starting with the January 2027 pilot.
+- A **comparison of control options**, including accepting the risk and the proposed vendor AI firewall, judged by dollars of risk reduced against cost.
+- **Measurement of friction**: how often controls wrongly block legitimate RM work, and what that costs.
+- The **shadow AI risk** created when RMs work around the copilot.
+- **Compliance evidence**: control mapping, audit logs, and an EU AI Act classification memo.
+
+**Commercial banking figures are provisional.** Its 150 RMs haven't been consulted (OI-1). Until they are, the assessment applies Private Wealth assumptions to them and labels those results provisional.
+
+### Out of scope
+
+| Item | Owner |
+|---|---|
+| Building the permission-aware search index fix (it's modelled, not built) | Platform team |
+| The GDPR Data Protection Impact Assessment (this initiative supplies inputs) | Compliance and the Data Protection Officer |
+| Due diligence on the copilot's model vendor | Third-party risk management |
+| Other AI systems at the bank, and any client-facing AI | Future initiatives |
+| Production deployment, single sign-on, high availability | IT, after the Risk Committee decision |
+| Changes to the cyber insurance policy | CFO (OI-2) |
 
 ---
 
 ## 6. Business Case
 
-*Pending.*
+> **Preliminary hand estimate** (calculation: `brd_estimate.py`). Every input below is a range from public benchmarks (`sources.md`) or an assumption, and the arithmetic is simple (average frequency × average cost per event). The FAIR model replaces these figures with simulated, measured results by **early February 2027**. Don't quote them as final.
+
+### 6.1 Cost of inaction (accept the risk)
+
+Full rollout, 300 RMs, no new controls. Per year.
+
+| Scenario | Events per year (low / likely / high) | Cost per event (low / likely / high) | Expected annual loss | Basis |
+|---|---|---|---|---|
+| S1 Cross-client exposure | 2 / 6 / 15 | $50K / $150K / $750K | **$1.59M** | October incident; Verizon median claim $110K |
+| S2 Injection-driven data theft | 0.05 / 0.2 / 0.5 | $1M / $4M / $15M | **$1.20M** | IBM financial-sector average $6.29M |
+| S3 System prompt leak | 1 / 3 / 8 | $10K / $40K / $150K | **$0.19M** | Assumed |
+| S4 Abuse and cost overrun | 2 / 4 / 10 | $5K / $20K / $75K | **$0.12M** | Assumed |
+| S5 Shadow AI leak | 0.1 / 0.4 / 1.0 | $0.5M / $2M / $6M | **$1.09M** | RM lead poll; IBM shadow-AI average $5.39M |
+| **Total** | | | **≈ $4.2M** | Range: $0.2M (everything goes well) to $26.7M (everything goes badly) |
+
+**Against the appetite:** about **4×** the CISO's $1M threshold.
+
+### 6.2 Options
+
+| Option | Expected annual loss | Risk reduced | Annual cost (run + friction) | Return | Meets 3:1? | Friction vs. $2M hard value |
+|---|---|---|---|---|---|---|
+| A. Accept the risk | $4.2M | — | $0 | — | — | 0% |
+| B. Vendor AI firewall | $3.7M | $0.5M | $410K ($250K + $160K) | 1.2 : 1 | ❌ | 8% |
+| C. Gateway guardrails (GR-01 to GR-05) | $2.5M | $1.7M | $227K ($120K + $107K) | 7.6 : 1 | ✅ | 5% |
+| D. Guardrails + search index fix | $2.2M | $2.0M | $277K ($170K + $107K) | 7.4 : 1 | ✅ | 5% |
+
+Friction uses 1,125,000 queries a year, 3 minutes per false block and $95 an hour. Option D's cost includes about $50K a year for the index fix, assumed. In options B to D, S5 rises by 1.5× because false blocks push RMs toward personal AI tools (PRD FR-35, elasticity 0.5).
+
+### 6.3 What the estimate says
+
+1. **Doing nothing is about $4.2M a year**: over four times the appetite, and more than the copilot's $2M of hard value.
+2. **Options C and D clear the CFO's 3:1 test and fit the $400K budget.**
+3. **No option brings the bank within appetite.** The best leaves about $2.2M. The biggest remaining item is **shadow AI (S5)**, which the gateway can't reduce, and which rises slightly when controls add friction.
+
+### 6.4 Limits of this estimate
+
+- **The option comparison rests on assumed effectiveness.** The vendor firewall's effectiveness (60% on S2, 30% on S1, 3% false blocks) and our guardrails' (70–80%) are guesses, made by the team proposing the guardrails. **That's a bias risk.** The test harness measures both on the same test suite before any funding decision. On cost alone, the firewall is about twice as expensive per year.
+- Run costs ($120K for the guardrails, $50K for the index fix) are assumed and need IT estimates.
+- No insurance recovery is assumed (OI-2).
+- Commercial banking figures are provisional (OI-1).
 
 ---
 
