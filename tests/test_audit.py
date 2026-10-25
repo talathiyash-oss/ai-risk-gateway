@@ -112,3 +112,37 @@ def test_purge_leaves_no_temp_file(tmp_path, redactor, clock):
     log.record_event("request", request_id="new")
     assert log.purge(retention_days=30) == 1
     assert list(tmp_path.glob("*.tmp")) == []
+
+
+def test_sensitive_terms_are_scrubbed(tmp_path, redactor, clock):
+    path = tmp_path / "audit.jsonl"
+    log = AuditLog(path, redactor, clock=clock,
+                   sensitive_terms={"Avery Ashford": "<PERSON>", "CANARY-7f3a9c": "<CANARY>"})
+    log.record_request(ctx=CTX, decisions=[], final_action="allow", latency_ms=1.0,
+                       prompt="Tell me about AVERY ASHFORD", response="avery ashford, ref canary-7F3A9C")
+    log.record_event("note", text="Avery Ashford again")
+    raw = path.read_text()
+    assert "avery ashford" not in raw.lower()
+    assert "canary-7f3a9c" not in raw.lower()
+    assert "<PERSON>" in raw and "<CANARY>" in raw
+
+
+def test_sensitive_names_respect_word_boundaries(tmp_path, redactor, clock):
+    path = tmp_path / "audit.jsonl"
+    log = AuditLog(path, redactor, clock=clock, sensitive_terms={"Kai Quill": "<PERSON>"})
+    log.record_event("note", text="Kai Quillfeather is not a client")
+    assert "Kai Quillfeather" in path.read_text()
+
+
+def test_services_audit_scrubs_names_and_canary(records, redactor, tmp_path, make_config):
+    from airg.config import GUARD_IDS
+    from airg.services import build_services
+    client = next(r for r in records if "Managed Portfolio" in r.products)
+    services = build_services(make_config(set(GUARD_IDS)), records, audit_path=tmp_path / "audit.jsonl",
+                              redactor=redactor)
+    result = services.gateway.handle("RM-01", client.client_id, "What is the balance on my client's portfolio?")
+    assert result.status == "ok" and client.name in result.answer
+    raw = (tmp_path / "audit.jsonl").read_text()
+    assert client.name.lower() not in raw.lower()
+    assert "<PERSON>" in raw
+    assert services.audit._scrub("ref CANARY-7f3a9c") == "ref <CANARY>"

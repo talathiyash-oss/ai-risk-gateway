@@ -8,7 +8,7 @@ from typing import Callable
 
 from airg.audit import AuditLog
 from airg.config import GatewayConfig
-from airg.copilot import Copilot
+from airg.copilot import CANARY, Copilot
 from airg.data import ClientRecord
 from airg.guardrails.injection import InjectionGuard
 from airg.guardrails.pii import PiiGuard
@@ -46,7 +46,10 @@ def build_services(config: GatewayConfig, records: list[ClientRecord], *,
             clock=clock)
     audit = None
     if g["GR-05"].enabled:
-        audit = AuditLog(g["GR-05"].options.get("log_path", audit_path), redactor, clock=clock)
+        sensitive = {r.name: "<PERSON>" for r in records}
+        sensitive[CANARY] = "<CANARY>"
+        audit = AuditLog(g["GR-05"].options.get("log_path", audit_path), redactor, clock=clock,
+                         sensitive_terms=sensitive)
         audit.purge(g["GR-05"].options.get("retention_days", 395))
     gateway = Gateway(config, copilot, guards, audit)
     reviews = ReviewQueue(gateway, audit, target_minutes=config.review_target_minutes, clock=clock)

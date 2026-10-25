@@ -1,13 +1,15 @@
 """GR-05: JSON Lines audit log (FR-11), with retention and export (FR-12).
 
 Text is always passed through the PII redactor before it is written, whether or not GR-02
-is enabled (GDPR data minimization, Compliance interview 2026-10-25).
+is enabled (GDPR data minimization, Compliance interview 2026-10-25). Known sensitive terms
+(client names, the system prompt canary) are replaced as well, since the redactor has no PERSON entity.
 """
 from __future__ import annotations
 
 import json
 import logging
 import os
+import re
 import threading
 import time
 from pathlib import Path
@@ -21,9 +23,11 @@ log = logging.getLogger(__name__)
 
 class AuditLog:
     def __init__(self, path: str | Path, redactor: PiiRedactor | None = None,
-                 clock: Callable[[], float] = time.time):
+                 clock: Callable[[], float] = time.time, sensitive_terms: dict[str, str] | None = None):
         self.path = Path(path)
         self._redactor = redactor or get_redactor()
+        self._terms = [(self._term_pattern(term), placeholder)
+                       for term, placeholder in (sensitive_terms or {}).items() if term]
         self._clock = clock
         self._lock = threading.RLock()
 
@@ -38,8 +42,20 @@ class AuditLog:
             with self.path.open("a") as f:
                 f.write(line)
 
+    @staticmethod
+    def _term_pattern(term: str) -> re.Pattern:
+        escaped = re.escape(term)
+        start = r"\b" if re.match(r"\w", term[0]) else ""
+        end = r"\b" if re.match(r"\w", term[-1]) else ""
+        return re.compile(start + escaped + end, re.IGNORECASE)
+
     def _scrub(self, text: str | None) -> str | None:
-        return None if text is None else self._redactor.redact(text)[0]
+        if text is None:
+            return None
+        text = self._redactor.redact(text)[0]
+        for pattern, placeholder in self._terms:
+            text = pattern.sub(placeholder, text)
+        return text
 
     def record_event(self, event: str, **fields) -> dict:
         scrubbed = {k: self._scrub(v) if isinstance(v, str) else v for k, v in fields.items()}
