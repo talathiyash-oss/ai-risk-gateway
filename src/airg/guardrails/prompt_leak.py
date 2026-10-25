@@ -16,13 +16,13 @@ class PromptLeakGuard(Guardrail):
 
     def __init__(self, system_prompt: str = SYSTEM_PROMPT, canary: str = CANARY,
                  threshold: float = 0.8, min_words: int = 5):
-        self._canary = canary
+        self._canary = canary.casefold()
         self._threshold = threshold
         sentences = re.split(r"(?<=\.)\s+", system_prompt)
         self._sentences = [_words(s) for s in sentences if len(_words(s)) >= min_words]
 
     def check_output(self, ctx: RequestContext, text: str) -> GuardResult:
-        if self._canary in text:
+        if self._canary in text.casefold():
             return GuardResult(self.guard_id, "output", Action.BLOCK, "canary")
         words = _words(text)
         for sentence in self._sentences:
