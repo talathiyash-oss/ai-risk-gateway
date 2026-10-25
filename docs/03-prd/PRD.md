@@ -4,7 +4,7 @@
 
 | Field | Value |
 |---|---|
-| Version | 0.2 (draft) |
+| Version | 0.3 (draft) |
 | Status | Draft for product owner review |
 | Product owner | Yash Talathi |
 | Approvers | CISO, Head of Compliance, RM lead, Engineering lead |
@@ -16,6 +16,7 @@
 |---|---|---|
 | 0.1 | 2026-10-23 | First draft |
 | 0.2 | 2026-10-23 | Product owner confirmed D-1 to D-6. Test suite resized and split 60/40 (D-3). Friction inputs became ranges linked to the scenario doc (D-4). Effectiveness haircut split into measured and assumed parts (D-5). FR-31 promoted to Should (D-6). |
+| 0.3 | 2026-10-25 | Updated from stakeholder interviews. CFO: 3:1 funding test, alternatives comparison (FR-33), no insurance recovery, budget-lock risk. Compliance: log minimization and retention, model-risk and deadline risks, DPIA dependency, EU AI Act memo. RM lead: D-2 cap tightened to 1% / 2%; fast review path in scope (D-7, FR-34); shadow AI scenario S5 linked to friction (D-8, FR-35). |
 
 ---
 
@@ -71,6 +72,8 @@ A security gateway that protects the copilot at runtime, measures how well each 
 | US-13 | As the CISO, I want to see coverage of all 10 OWASP LLM risks, including those owned outside the gateway, so that there are no unexplained gaps | Should | BO-4 |
 | US-14 | As a model risk validator, I want to rerun the test suite and get identical results, so that I can independently validate the controls | Must | BO-4 |
 | US-15 | As the CISO, I want to see a live attack blocked by the gateway, so that the board understands what the controls do | Should | BO-1 |
+| US-16 | As an RM, when I'm blocked, I want to request a quick review instead of hitting a dead end, so that I can still prepare for my meeting | Must | BO-3 |
+| US-17 | As the CISO, I want to see how over-blocking pushes RMs toward unapproved AI tools, in dollars, so that I can weigh friction against protection | Must | BO-3 |
 
 ---
 
@@ -165,7 +168,7 @@ Labelled attack prompts for each in-scope category, plus benign RM questions, in
 The harness replays the hold-out set under these configurations: all off, each guardrail on alone, all on. For each, it reports attack block rate and benign false-positive rate, with counts and a 95% Wilson confidence interval.
 - *Given* a fixed seed, *when* the harness runs twice, *then* the results files are identical.
 - *Given* 37 of 40 hold-out attacks blocked, *when* results are reported, *then* the block rate is 92.5% with a 95% interval of 80.1%–97.4%.
-- *Given* a guardrail's measured false-positive rate is above the D-2 cap (2% per guardrail; 5% for all guardrails combined), *when* results are reported, *then* that guardrail is flagged as failing the cap.
+- *Given* a guardrail's measured false-positive rate is above the D-2 cap (1% per guardrail; 2% for all guardrails combined), *when* results are reported, *then* that guardrail is flagged as failing the cap.
 - *Given* the all-off configuration, *when* the harness runs, *then* the attack block rate is 0%.
 
 **FR-17 Results handoff** (US-04) Must
@@ -175,7 +178,7 @@ The harness writes a results file that the FAIR engine reads as the source for V
 ### 4.9 FAIR Risk Engine
 
 **FR-18 Scenario configuration** (US-06) Must
-Scenarios S1–S4 are defined in a configuration file. Every input is a PERT range (min, most likely, max) with a provenance label (Measured / Benchmarked / Assumed) and a source or rationale.
+Scenarios S1–S5 are defined in a configuration file. Every input is a PERT range (min, most likely, max) with a provenance label (Measured / Benchmarked / Assumed) and a source or rationale.
 - *Given* an input without a provenance label, *when* the engine starts, *then* it refuses to run and names the missing field.
 
 **FR-19 Monte Carlo simulation** (US-04, US-14) Must
@@ -241,6 +244,20 @@ Remove markdown images and links pointing to domains not on an allowlist, blocki
 A switchable option in the simulated copilot: when on, it only retrieves records for the session client. The FAIR engine compares S1 loss under four strategies: neither, upstream fix only, GR-02 only, and both.
 - *Given* the harness and FAIR engine have run all four strategies, *when* the CISO opens the control view, *then* S1 EAL, control cost and ROI are shown side by side for each strategy.
 
+**FR-34 Review request for blocked RMs** (US-16) Must (D-7)
+A blocked RM can request a review from the block message. The block stays in place until a reviewer decides. In the prototype, the reviewer is a simulated queue.
+- *Given* a request is blocked, *when* the RM selects "request review," *then* a review request is created with the block's reference ID, the RM sees its status and the target response time (configurable, default 15 minutes), and the request is logged under GR-05.
+- *Given* a review request, *when* the reviewer approves it, *then* the RM receives the answer, and the log records the reviewer, decision and time taken.
+- *Given* a review request, *when* it is open, *then* the RM cannot see the original response until it is approved (no self-override).
+
+**FR-35 Shadow AI scenario S5, linked to friction** (US-17) Must (D-8)
+Scenario S5: an RM pastes client data into an unapproved external AI tool. S5's threat event frequency rises with the gateway's combined false-block rate:
+S5 frequency = baseline frequency × (1 + elasticity × false-block rate ÷ 2%), where baseline frequency and elasticity are PERT ranges labelled Assumed (baseline informed by the RM lead's poll: about a third of pilot RMs already do this). Gateway controls don't reduce S5 directly; only lower friction does.
+Each control's EAL reduction (FR-22) is reported **net** of any S5 increase it causes.
+- *Given* a combined false-block rate of 0%, *when* S5 is computed, *then* its frequency equals the baseline.
+- *Given* a combined false-block rate of 2% and elasticity 1.0, *when* S5 is computed, *then* its frequency is twice the baseline.
+- *Given* a control that adds false blocks, *when* its ROI is calculated, *then* its EAL reduction is net of the S5 increase it causes.
+
 **FR-32 Real LLM backend** Won't (this release)
 Replace the simulated copilot with a real LLM API. Planned as a later toggle.
 
@@ -267,10 +284,12 @@ All decisions confirmed by the product owner on 2026-10-23.
 | ID | Decision | Options considered | Decision | Why |
 |---|---|---|---|---|
 | D-1 | Failure mode per guardrail | All closed; GR-03 open; GR-05 open with alert | GR-01, GR-02, GR-03, GR-05: **fail closed**. GR-04: **fail open** | Data exposure costs far more than a short outage, and a rate-limiter fault exposes no data. GR-05 fails closed because "if we can't record it, we don't serve it" supports SR 11-7 and EU AI Act Art. 12 evidence. Accepted trade-off: a logging fault takes the copilot down. |
-| D-2 | Highest acceptable false-positive rate | 1%/3%, 2%/5%, 5%/10% (per guardrail / combined) | **2% per guardrail, 5% combined** | At worst about one false block per RM per day. Higher rates push RMs toward unapproved tools, which is a worse risk. A guardrail over the cap fails UAT and is retuned. |
+| D-2 | Highest acceptable false-positive rate | 1%/3%, 2%/5%, 5%/10% (per guardrail / combined); revised 2026-10-25: 1.3% combined, 1%/2% with review path, keep 2%/5% | **1% per guardrail, 2% combined** (revised from 2% / 5%) | The RM lead's limit is about one block a week, roughly 1.3% at 75 queries a week; at one a day RMs stop using it. 2% combined is about 1.5 blocks a week, slightly above his limit, with the review path (D-7) making each block cheaper. A guardrail over the cap fails UAT and is retuned. Measurement limit: 1% on 400 hold-out benign questions gives an interval of about 0.4–2.5%. |
 | D-3 | Test suite size and split | 40/category + 200 with no hold-out; 100 + 1,000; 200 + 2,000 | **100 attacks per category (400) + 1,000 benign, split 60% tuning / 40% hold-out** | Gives 40 scored attacks per category (37/40 → interval 80–97%) and 400 scored benign questions (2% → interval 1.0–3.9%), precise enough to enforce D-2. Beyond this, extra prompts mostly add variations rather than new techniques. |
 | D-4 | Friction cost inputs | Point values; ranges | **RM loaded hourly cost $70 / $95 / $130; minutes lost per false block 1 / 3 / 10 (PERT, Assumed). RM count, queries per RM per day and working days come from `docs/00-scenario.md`.** | Consistent with the rest of the model, which uses ranges. The 10-minute tail covers an RM giving up and finding the answer another way. Hourly cost to be benchmarked during BRD research. |
 | D-5 | Effectiveness haircut | Fixed multipliers; confidence interval only; interval + attacker factor | **Confidence interval [Measured] × adaptive-attacker degradation 0% / 15% / 40% [Assumed], shown separately** | Separates measurement noise, which statistics can handle, from attacker adaptation, which only judgment can. Avoids arbitrary multipliers and lets the CISO test the assumption in the what-if view (FR-28). |
+| D-7 | Fast path for blocked RMs | Review without override; RM self-override with reason; out of scope | **Review without override (FR-34)**: block stands until a reviewer decides; target 15 minutes | The RM lead said dead ends, not blocks, make RMs give up. Compliance wants blocks to hold. A review path keeps the control and removes the dead end. |
+| D-8 | Shadow AI | Scenario linked to friction; fixed-rate scenario; note only | **New scenario S5, frequency linked to the false-block rate (FR-35)** | A third of pilot RMs already paste client data into personal ChatGPT. Linking S5 to friction puts a dollar figure on the risk cost of over-blocking, so the trade-off between Compliance and the RM lead is settled by the model. |
 | D-6 | Stretch items | Both later; FR-31 Should and FR-30 later; both Should | **FR-31 promoted to Should. FR-30 stays Could and is decided at the end of Sprint 2.** | FR-31 costs little in a simulated copilot, and it lets the FAIR engine compare fixing the root cause upstream with catching the symptom at the gateway. |
 
 ---
@@ -324,7 +343,7 @@ The block-rate target is a hygiene check on our own suite, not proof of real-wor
 - Authentication and single sign-on (user ID is passed in the request)
 - Production deployment, high availability, scaling
 - A real vector database (the simulated copilot uses in-memory retrieval)
-- RM override of blocks ("break glass")
+- RM self-override of blocks (D-7 provides a review path instead)
 - OWASP risks not listed as covered in §8
 
 ---
@@ -374,8 +393,8 @@ The block-rate target is a hygiene check on our own suite, not proof of real-wor
 
 | Sprint | Scope | Demo at sprint review |
 |---|---|---|
-| 1 | FR-01–FR-14, NFR-06 | An attack succeeds with guardrails off and is blocked with them on; audit log entries |
-| 2 | FR-15–FR-22, FR-31, NFR-01, NFR-03 | Harness results with confidence intervals; FAIR outputs from the command line, including the four S1 strategies; FR-30 decision |
+| 1 | FR-01–FR-14, FR-34, NFR-06 | An attack succeeds with guardrails off and is blocked with them on; audit log entries; a blocked RM requests review |
+| 2 | FR-15–FR-22, FR-31, FR-35, NFR-01, NFR-03 | Harness results with confidence intervals; FAIR outputs from the command line, including the four S1 strategies and S5 rising with friction; FR-30 decision |
 | 3 | FR-23–FR-29, FR-33, NFR-04, NFR-05, NFR-07; FR-30 if approved | Full CISO dashboard walkthrough |
 
 **Release deliverables beyond the software:** CISO one-page brief; **EU AI Act classification memo** for Compliance to use with the CSSF (from the applicability analysis); README.
@@ -390,6 +409,7 @@ The block-rate target is a hygiene check on our own suite, not proof of real-wor
 | Q-2 | Are BO-1 to BO-5 and the 60% target right? | BRD |
 | Q-3 | ~~What is the Bank's risk appetite for this copilot?~~ | Partly resolved 2026-10-25 in the CISO interview: EAL under $1M and P90 under about $5M. These are Daniel's personal thresholds, not yet agreed by the Risk Committee; the BRD formalizes them. |
 | Q-6 | Does the cyber insurance policy cover AI-related incidents? | CFO / insurance broker; BRD |
+| Q-7 | What do the 150 commercial bankers need, given that they handle company financials rather than personal portfolios? | Interview with a commercial banking lead before PRD sign-off |
 | Q-5 | Should BO-2 ("reduce EAL by at least 60%") be replaced by "bring EAL within risk appetite"? | BRD |
 | Q-4 | ~~Confirm decisions D-1 to D-6~~ | Resolved 2026-10-23, see §6 |
 

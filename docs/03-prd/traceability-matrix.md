@@ -1,6 +1,6 @@
 # Traceability Matrix
 
-Version 0.2 (draft), linked to PRD v0.2. Test case IDs are reserved now and written in Phase 6.
+Version 0.3 (draft), linked to PRD v0.3. Test case IDs are reserved now and written in Phase 6.
 
 **How to read it:** each row traces a business objective down to the requirement that delivers it, the test that proves it, and the control it relates to. A BO with no Must row means a requirement is missing. A requirement with no BO is scope creep.
 
@@ -30,6 +30,8 @@ Version 0.2 (draft), linked to PRD v0.2. Test case IDs are reserved now and writ
 | BO-3 | US-02 | FR-03 Policy decisions | Must | TC-03a, TC-03b | — |
 | BO-3 | US-02 | NFR-06 No detection detail in block messages | Must | TC-03b | — |
 | BO-3 | — | D-2 False-positive limit (via FR-16) | Must | TC-16c | All |
+| BO-3 | US-16 | FR-34 Review request | Must | TC-34a, TC-34b, TC-34c | GR-05 |
+| BO-3 | US-17 | FR-35 Shadow AI scenario S5 | Must | TC-35a, TC-35b, TC-35c | All |
 | BO-4 Audit evidence | US-10 | FR-11 Decision logging | Must | TC-11a, TC-11b, TC-11c, TC-11d | GR-05 |
 | BO-4 | US-12 | FR-12 Log export | Should | TC-12a | GR-05 |
 | BO-4 | US-11, US-13 | FR-27 Compliance view | Must | TC-27a | All |
@@ -51,10 +53,10 @@ Version 0.2 (draft), linked to PRD v0.2. Test case IDs are reserved now and writ
 |---|---|---|
 | BO-1 | 8 | None |
 | BO-2 | 5 | None |
-| BO-3 | 6 | None |
+| BO-3 | 8 | None |
 | BO-4 | 7 | None |
 | BO-5 | 5 | None |
 
-Every Must user story (US-01–07, US-10, US-11, US-14) maps to at least one Must requirement.
+Every Must user story (US-01–07, US-10, US-11, US-14, US-16, US-17) maps to at least one Must requirement.
 
 Requirements with no user story: FR-04 (from decision D-1), FR-30/FR-31 (stretch items from the OWASP coverage review). These trace to BOs through decisions rather than stories, which is acceptable. NFR-02, NFR-04, NFR-05, NFR-07 are delivery constraints and are verified in Phase 6 rather than traced to a single BO.

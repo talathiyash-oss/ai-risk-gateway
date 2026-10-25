@@ -60,6 +60,7 @@ A per-guardrail fail-closed or fail-open policy. The PRD decides the setting for
 | S2 | Hidden instructions in a document make the copilot leak client data | External attacker | GR-01, GR-02 |
 | S3 | System prompt and internal policy logic disclosed | Curious user or red-teamer | GR-03 |
 | S4 | Scripted abuse runs up costs or degrades the service | Compromised account or bot | GR-04 |
+| S5 | RM pastes client data into an unapproved external AI tool (shadow AI). *Added 2026-10-25 from the RM lead interview; see PRD D-8.* | Insider, to work around friction | None directly; rises with the false-block rate |
 
 ### Inputs
 
