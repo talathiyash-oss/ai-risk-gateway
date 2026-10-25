@@ -19,7 +19,7 @@ Everything in this document is fictional. All figures are illustrative.
 
 | Entity | Role | Key regulators and rules |
 |---|---|---|
-| Brindlemoor Trust (Chicago) | Main bank | Federal Reserve, Illinois IDFPR, FDIC; GLBA; SR 11-7 |
+| Brindlemoor Trust (Chicago) | Main bank | Federal Reserve, Illinois IDFPR, FDIC; GLBA; SR 26-2 model risk guidance (replaced SR 11-7 in April 2026) |
 | Brindlemoor Trust Company of New York | Trust and fiduciary services for US wealth clients | NYDFS (Part 500 applies to this entity) |
 | Brindlemoor Wealth S.A. (Luxembourg) | Private banking for European clients | CSSF; GDPR; EU AI Act (as a deployer) |
 
@@ -62,6 +62,6 @@ The CISO now has to answer two questions by March 2027: *What is our dollar expo
 |---|---|---|
 | Daniel | CISO | Answer the Risk Committee in dollars, defensibly |
 | Helen | CFO | Spend only where the risk reduction justifies it |
-| Rahul | Head of Compliance | NYDFS, GDPR, EU AI Act and SR 11-7 evidence before Luxembourg goes live |
+| Rahul | Head of Compliance | NYDFS, GDPR, EU AI Act and model risk evidence before Luxembourg goes live |
 | Marcus | Head of US Private Wealth (RM lead) | Don't let security kill the $4.1M productivity case |
 | Priya | Relationship Manager, US Private Wealth (pilot user) | Fast answers; never see the wrong client's data again |

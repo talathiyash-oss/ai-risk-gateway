@@ -37,7 +37,7 @@ A security gateway that protects the copilot at runtime, measures how well each 
 | BO-1 | Quantify the copilot's security-related loss exposure in dollars, as a range, before full rollout |
 | BO-2 | Reduce modeled Expected Annual Loss from copilot incidents by at least 60% vs. the unprotected baseline |
 | BO-3 | Protect the copilot's productivity case: controls must not noticeably slow down or block legitimate RM work |
-| BO-4 | Produce audit-ready evidence against NIST AI RMF, ISO/IEC 42001, the EU AI Act (EU subsidiary) and SR 11-7 |
+| BO-4 | Produce audit-ready evidence against NIST AI RMF, ISO/IEC 42001, the EU AI Act (EU subsidiary) and the Federal Reserve's model risk guidance (SR 26-2) |
 | BO-5 | Rank AI security controls by return on investment so the CISO can prioritize funding |
 
 ---
@@ -49,7 +49,7 @@ A security gateway that protects the copilot at runtime, measures how well each 
 | **Priya, Relationship Manager** | End user. Uses the copilot 10–20 times a day to prepare for client meetings | Fast, accurate answers about her clients | Security tools that block her for no clear reason; hearing "use a different tool" | She rarely notices the gateway exists |
 | **Daniel, CISO** | Buyer. Accountable for AI security risk | Defend AI security spend to the CFO and board in dollars | Vendors and teams that say "high risk" without numbers; numbers he can't defend | He answers "what's our exposure and what should we fund?" in one slide |
 | **Maria, Compliance Analyst** | Auditor. Prepares evidence for regulators and internal audit | Show which controls exist, which rules they satisfy, and that they ran | Evidence spread across emails and screenshots | One export answers the auditor's questions |
-| **Sam, Model Risk Validator** | Second line of defense under SR 11-7 | Independently check that the model and its controls work as claimed | Results she can't reproduce | Reruns the tests and gets the same numbers |
+| **Sam, Model Risk Validator** | Second line of defense under SR 26-2 model risk guidance | Independently check that the model and its controls work as claimed | Results she can't reproduce | Reruns the tests and gets the same numbers |
 
 ---
 
@@ -226,7 +226,7 @@ Every model input shows its value, range, provenance label and source. Can be fi
 - *Given* the provenance view, *when* "Assumed only" is selected, *then* only Assumed inputs appear, each with its rationale.
 
 **FR-27 Compliance view** (US-11, US-13) Must
-Shows the applicability table, the control register (GR-x → OWASP, NIST AI RMF, ISO 42001, EU AI Act, SR 11-7), and the coverage table for all 10 OWASP risks, naming the owning control for those outside the gateway.
+Shows the applicability table, the control register (GR-x → OWASP, NIST AI RMF, ISO 42001, EU AI Act, SR 26-2), and the coverage table for all 10 OWASP risks, naming the owning control for those outside the gateway.
 
 **FR-28 What-if analysis** (US-09) Should
 Change selected inputs (threat frequency, loss magnitude, adaptive-attacker degradation, guardrail on/off) and see EAL recalculate.
@@ -283,7 +283,7 @@ All decisions confirmed by the product owner on 2026-10-23.
 
 | ID | Decision | Options considered | Decision | Why |
 |---|---|---|---|---|
-| D-1 | Failure mode per guardrail | All closed; GR-03 open; GR-05 open with alert | GR-01, GR-02, GR-03, GR-05: **fail closed**. GR-04: **fail open** | Data exposure costs far more than a short outage, and a rate-limiter fault exposes no data. GR-05 fails closed because "if we can't record it, we don't serve it" supports SR 11-7 and EU AI Act Art. 12 evidence. Accepted trade-off: a logging fault takes the copilot down. |
+| D-1 | Failure mode per guardrail | All closed; GR-03 open; GR-05 open with alert | GR-01, GR-02, GR-03, GR-05: **fail closed**. GR-04: **fail open** | Data exposure costs far more than a short outage, and a rate-limiter fault exposes no data. GR-05 fails closed because "if we can't record it, we don't serve it" supports model risk and EU AI Act Art. 12 evidence. Accepted trade-off: a logging fault takes the copilot down. |
 | D-2 | Highest acceptable false-positive rate | 1%/3%, 2%/5%, 5%/10% (per guardrail / combined); revised 2026-10-25: 1.3% combined, 1%/2% with review path, keep 2%/5% | **1% per guardrail, 2% combined** (revised from 2% / 5%) | The RM lead's limit is about one block a week, roughly 1.3% at 75 queries a week; at one a day RMs stop using it. 2% combined is about 1.5 blocks a week, slightly above his limit, with the review path (D-7) making each block cheaper. A guardrail over the cap fails UAT and is retuned. Measurement limit: 1% on 400 hold-out benign questions gives an interval of about 0.4–2.5%. |
 | D-3 | Test suite size and split | 40/category + 200 with no hold-out; 100 + 1,000; 200 + 2,000 | **100 attacks per category (400) + 1,000 benign, split 60% tuning / 40% hold-out** | Gives 40 scored attacks per category (37/40 → interval 80–97%) and 400 scored benign questions (2% → interval 1.0–3.9%), precise enough to enforce D-2. Beyond this, extra prompts mostly add variations rather than new techniques. |
 | D-4 | Friction cost inputs | Point values; ranges | **RM loaded hourly cost $70 / $95 / $130; minutes lost per false block 1 / 3 / 10 (PERT, Assumed). RM count, queries per RM per day and working days come from `docs/00-scenario.md`.** | Consistent with the rest of the model, which uses ranges. The 10-minute tail covers an RM giving up and finding the answer another way. Hourly cost to be benchmarked during BRD research. |
@@ -383,7 +383,7 @@ The block-rate target is a hygiene check on our own suite, not proof of real-wor
 | RISK-04 | Scope creep from stretch items | D-6 decision gate at the end of Sprint 2 |
 | RISK-05 | Framework clause IDs cited incorrectly | Phase 4 verification against primary sources |
 | RISK-06 | Dollar outputs taken as precise predictions | Always show ranges, P90 and provenance; label it a model, not a forecast |
-| RISK-08 | Model Risk Management (SR 11-7) hasn't reviewed the copilot and may require independent validation that isn't in anyone's plan, delaying rollout | Engage Model Risk early; give them the reproducible harness and test suite (FR-15, FR-16, US-14) as validation evidence |
+| RISK-08 | Model Risk Management hasn't been engaged. Under SR 26-2 (which replaced SR 11-7 in April 2026), the generative-AI copilot is outside scope, but the **FAIR engine is a quantitative model likely inside scope**, and its validation isn't in anyone's plan | Engage Model Risk early; document the FAIR engine's assumptions and give them the reproducible harness, test suite and fixed-seed runs (FR-15, FR-16, FR-19, US-14) as validation evidence |
 | RISK-09 | Three external dates cluster: budget lock mid-February, NYDFS Part 500 certification April 15, 2027, Luxembourg go-live July 2027 | Release plan works back from mid-February; compliance view (FR-27) produces evidence usable for the April certification |
 | RISK-07 | The 2027 budget locks in mid-February, six weeks before the Risk Committee deadline. A late funding request means controls aren't funded until July, the month of full rollout | Preliminary EAL and ROI results ready by early February 2027, with the full assessment by end of March |
 

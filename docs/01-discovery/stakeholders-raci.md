@@ -15,7 +15,7 @@
 | Risk Committee (incl. former actuary) | "What does 'high' mean in dollars?" | Exposure in dollars, compared with an agreed risk appetite |
 | Helen, CFO | Security always asks for more | ROI per control, so spend follows risk reduction |
 | Marcus, Head of US Private Wealth | Security killing the $4.1M productivity case; RMs moving to ChatGPT | Friction measured and capped (D-2), not just risk reduced |
-| Rahul, Head of Compliance | Luxembourg go-live in July; NYDFS, GDPR, EU AI Act, SR 11-7 | Mapped controls and audit evidence he can sign off |
+| Rahul, Head of Compliance | Luxembourg go-live in July; NYDFS, GDPR, EU AI Act, model risk (SR 26-2) | Mapped controls and audit evidence he can sign off |
 | Priya and the RMs | Fast answers; never seeing the wrong client's data again | Protections that rarely get in their way |
 | Platform team | The search index fix is ~3 months out | Clarity on what the gateway covers in the meantime |
 | Copilot model vendor | Contract and questionnaire compliance | Little; covered by third-party risk management |

@@ -87,7 +87,7 @@ A per-guardrail fail-closed or fail-open policy. The PRD decides the setting for
 | NIST AI RMF 1.0 (+ AI 600-1 GenAI Profile) | Voluntary; the US reference point | Main structure |
 | ISO/IEC 42001:2023 | Voluntary, certifiable | Shows what an audit would ask for |
 | EU AI Act | Applies via the EU subsidiary. The RM copilot is likely not high-risk under Annex III. | Art. 4 AI literacy applies; high-risk articles used as voluntary benchmarks |
-| Fed/OCC SR 11-7 (Model Risk Management) | Applies: regulators treat an LLM as a model | Validation and ongoing monitoring expectations |
+| Fed/OCC/FDIC SR 26-2 (Model Risk Management; replaced SR 11-7 on 17 April 2026) | Generative AI is explicitly **outside** its scope, but the FAIR engine (a quantitative model) is likely inside it; the bank's governance still applies to the copilot | Validation expectations for the FAIR engine; general governance for the copilot. *Corrected 2026-10-25, see `docs/02-brd/sources.md` G-1.* |
 | OWASP Top 10 for LLM Applications (2025) | Industry threat taxonomy | Threat categories for guardrails and tests |
 
 ### Control register (draft; all clause IDs verified against primary sources in Phase 4)
@@ -100,13 +100,13 @@ A per-guardrail fail-closed or fail-open policy. The PRD decides the setting for
 | GR-04 | Rate limiting / usage caps | LLM10 | MANAGE 4.1 | A.6 operation & monitoring | Art. 15* |
 | GR-05 | Audit log of all gateway decisions | supports all | MANAGE 4.1 | A.6 event logging | Art. 12* |
 
-\* Voluntary benchmark unless the system is high-risk. SR 11-7 maps to the harness (validation) and GR-05 (ongoing monitoring).
+\* Voluntary benchmark unless the system is high-risk. SR 26-2 maps to FAIR engine validation (harness, fixed seeds, documented assumptions); GR-05 supports ongoing monitoring.
 
 ### Process-level mapping
 
 - FAIR analysis → NIST MAP 5.1, ISO 42001 Clause 6.1.2.
 - ROI-based funding recommendation → NIST MANAGE 1.3, ISO 42001 Clause 6.1.3.
-- Harness results → NIST MEASURE evidence and SR 11-7 validation.
+- Harness results → NIST MEASURE evidence and model risk validation of the FAIR engine (SR 26-2).
 
 ## 6. SDLC Plan
 
