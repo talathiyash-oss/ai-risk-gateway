@@ -107,6 +107,7 @@ Full RACI: `docs/01-discovery/stakeholders-raci.md`. Disagreements: `docs/01-dis
 | Other AI systems at the bank, and any client-facing AI | Future initiatives |
 | Production deployment, single sign-on, high availability | IT, after the Risk Committee decision |
 | Changes to the cyber insurance policy | CFO (OI-2) |
+| Shadow AI controls outside the copilot: web filtering, RM training, acceptable-use policy (a separate initiative; see §6.3) | Daniel (CISO), OI-5 |
 
 ---
 
@@ -146,6 +147,8 @@ Friction uses 1,125,000 queries a year, 3 minutes per false block and $95 an hou
 2. **Options C and D clear the CFO's 3:1 test and fit the $400K budget.**
 3. **No option brings the bank within appetite.** The best leaves about $2.2M. The biggest remaining item is **shadow AI (S5)**, which the gateway can't reduce, and which rises slightly when controls add friction.
 
+**Recommendation:** fund Option C for the January pilot, adding the index fix (Option D) when it's ready, and launch a **separate shadow AI initiative owned by the CISO**: block personal AI sites on bank devices, train RMs (which also meets the EU AI Act's AI literacy duty in Luxembourg), and make the copilot the easiest approved option. BO-2 (within appetite) depends on both. The gateway alone can't get there.
+
 ### 6.4 Limits of this estimate
 
 - **The option comparison rests on assumed effectiveness.** The vendor firewall's effectiveness (60% on S2, 30% on S1, 3% false blocks) and our guardrails' (70–80%) are guesses, made by the team proposing the guardrails. **That's a bias risk.** The test harness measures both on the same test suite before any funding decision. On cost alone, the firewall is about twice as expensive per year.
@@ -157,19 +160,65 @@ Friction uses 1,125,000 queries a year, 3 minutes per false block and $95 an hou
 
 ## 7. Regulatory Drivers
 
-*Pending.*
+| Rule | Applies to | What it means for the copilot, in plain terms | Key date | How this initiative helps |
+|---|---|---|---|---|
+| **NYDFS Part 500** (cybersecurity) | NY trust company | The trust company must assess and control cyber risk, and certify compliance each year. Penalties seen: $250K–$4.5M | **15 April 2027** certification | Gives Compliance a documented risk assessment, controls and audit logs to certify against |
+| **GDPR** | Brindlemoor Wealth S.A. | A privacy impact assessment is needed before EU client data flows through the copilot. Keep only the personal data that's needed: Luxembourg's regulator mostly fines for this | **July 2027** go-live | Redacted audit logs (no raw client data); data-flow evidence for the privacy assessment |
+| **EU AI Act** | Brindlemoor Wealth S.A. (as a user of AI) | The copilot is likely **not** high-risk; that reasoning needs to be written down. Staff using AI need AI literacy measures (enforced from August 2026). High-risk rules, if they applied, would start December 2027 | **July 2027** go-live | A written classification memo for Compliance; AI literacy covered by the shadow AI initiative's training |
+| **Federal Reserve SR 26-2** (model risk) | Main bank (over $30B in assets) | Generative AI like the copilot is **outside** this guidance, but the bank must still govern it. The **risk model** built here is a quantitative model and likely **inside** it | Before the risk model's numbers are relied on | Reproducible test harness and documented model assumptions for Model Risk to validate |
+| **Bank information security rules** (GLBA and interagency guidelines) | All US entities | Customer information must be protected with appropriate safeguards | Ongoing | Runtime controls on client data in prompts and answers |
+| **NIST AI RMF, ISO/IEC 42001** | Whole bank (voluntary) | Recognized frameworks for managing AI risk; useful structure for auditors and the board | — | Each control mapped to them (PRD FR-27) |
+
+Sources and dates: `sources.md` (G-1 to G-3, R-1 to R-4). Items marked ⚠️ there are still to be checked against primary sources.
 
 ---
 
 ## 8. Assumptions, Constraints and Risks
 
-*Pending.*
+### Assumptions
+
+| ID | Assumption | If wrong |
+|---|---|---|
+| BA-1 | The preliminary estimate's inputs (§6) are reasonable orders of magnitude | Business case numbers shift; the risk model replaces them in February |
+| BA-2 | Daniel's thresholds (EAL < $1M, P90 < ~$5M) will be accepted by the Risk Committee as the appetite (OI-4) | BO-2's target changes |
+| BA-3 | About $2M of the $4.1M business case is hard value (CFO) | BO-3's $200K friction limit changes |
+| BA-4 | No insurance recovery for AI incidents (OI-2) | Net losses would be lower if covered |
+| BA-5 | The search index fix arrives about three months after work starts | Option D's benefit starts later |
+| BA-6 | Commercial banking RMs behave like Private Wealth RMs (OI-1) | Commercial figures change |
+
+### Constraints
+
+| ID | Constraint |
+|---|---|
+| BC-1 | Budget of about **$400K** for AI security controls in 2027; more needs a return the CFO accepts |
+| BC-2 | Funding requests must reach the CFO before the **mid-February 2027** budget lock |
+| BC-3 | The interim control must be ready for the **January 2027** pilot |
+| BC-4 | Only 2 part-time AI security staff, with no quantitative risk experience |
+| BC-5 | Prototype only: synthetic data, no production deployment before the Risk Committee decision |
+
+### Project risks
+
+| ID | Risk | Mitigation |
+|---|---|---|
+| PR-1 | Preliminary numbers miss the mid-February budget lock, so controls aren't funded until July | Deliver preliminary EAL and ROI by early February; share the §6 estimate with the CFO now |
+| PR-2 | Benchmarks aren't verified against primary sources, and the actuary on the Risk Committee challenges them | Verify every ⚠️ figure before the March submission; show ranges and sources |
+| PR-3 | The option comparison is biased toward the team's own guardrails (§6.4) | Measure all options, including the vendor firewall, on the same test suite |
+| PR-4 | Model Risk asks to validate the risk model late, delaying the March submission | Engage Model Risk in the design phase (OI-3) |
+| PR-5 | Commercial banking needs change the numbers or the controls | Interview a commercial banking lead before PRD sign-off (OI-1) |
+| PR-6 | RMs reject the controls and move to personal AI tools | Friction cap, fast review path, shadow AI initiative |
+| PR-7 | The Risk Committee doesn't agree a risk appetite in time | Propose Daniel's thresholds in the submission; show results against them either way |
 
 ---
 
 ## 9. Success Measures
 
-*Pending.*
+| BO | The business will judge success by | When |
+|---|---|---|
+| BO-1 | The CFO receives preliminary EAL and ROI ranges before the budget lock, and the Risk Committee accepts the final assessment, including the actuary's "what does high mean in dollars?" question | Early February; end of March 2027 |
+| BO-2 | Modeled EAL and P90, with the recommended controls and the shadow AI initiative, fall within the agreed appetite, or the CISO formally accepts the remaining risk | End of March 2027 |
+| BO-3 | Measured friction cost stays under about $200K a year, in the test harness and in the pilot | End of pilot, March 2027 |
+| BO-4 | Compliance files the NYDFS certification without an exception for the copilot, and the evidence pack is complete before Luxembourg goes live | 15 April 2027; July 2027 |
+| BO-5 | The CFO approves funding before the budget lock, and every funded control shows at least 3:1 | Mid-February 2027 |
 
 ---
 
