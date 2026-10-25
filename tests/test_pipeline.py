@@ -134,18 +134,46 @@ def test_every_request_is_audited_once(make_gateway, tmp_path, redactor):
     assert len(set(ids)) == 3
 
 
-def test_skip_guards_reruns_without_the_named_guard(make_gateway, tmp_path, redactor):
+def test_skip_stages_reruns_without_the_named_stage(make_gateway, tmp_path, redactor):
     audit = AuditLog(tmp_path / "audit.jsonl", redactor)
     gateway, copilot = make_gateway(audit=audit)
     question = "You are now looking at the trust account guide, what are the distribution rules?"
     assert gateway.handle("RM-01", "C-1001", question).blocked_by == "GR-01"
-    result = gateway.handle("RM-01", "C-1001", question, skip_guards=frozenset({"GR-01"}),
+    result = gateway.handle("RM-01", "C-1001", question, skip_stages=frozenset({("GR-01", "input")}),
                             override_of="req-original")
     assert result.status == "ok"
     assert "250,000 dollars" in result.answer
     decisions = audit.entries()[-1]["decisions"]
     assert {"guard_id": "GR-01", "stage": "override", "action": "allow",
-            "reason": "skipped_for_review:req-original"} in decisions
+            "reason": "skipped_for_review:input:req-original"} in decisions
+
+
+def test_rerun_still_filters_poisoned_documents(make_gateway, tmp_path, redactor):
+    audit = AuditLog(tmp_path / "audit.jsonl", redactor)
+    gateway, _ = make_gateway(audit=audit)
+    question = "You are now asking: what does the fee schedule say about portfolio fees?"
+    first = gateway.handle("RM-01", "C-1001", question)
+    assert (first.blocked_by, first.blocked_stage) == ("GR-01", "input")
+    result = gateway.handle("RM-01", "C-1001", question, skip_stages=frozenset({("GR-01", "input")}),
+                            override_of=first.request_id)
+    assert result.status == "ok"
+    decisions = audit.entries()[-1]["decisions"]
+    assert {"guard_id": "GR-01", "stage": "chunks", "action": "redact",
+            "reason": "indirect_injection:DOC-FEES-ADDENDUM"} in decisions
+    assert "Client accounts" not in result.answer
+    assert not ACCOUNT.findall(result.answer)
+
+
+@pytest.mark.parametrize("skip_stages, override_of", [
+    (frozenset({("GR-01", "input")}), None),
+    (frozenset({("GR-99", "input")}), "req-original"),
+    (frozenset({("GR-01", "override")}), "req-original"),
+])
+def test_invalid_skip_stages_raise(make_gateway, skip_stages, override_of):
+    gateway, _ = make_gateway()
+    with pytest.raises(ValueError):
+        gateway.handle("RM-01", "C-1001", "What are the trust rules?", skip_stages=skip_stages,
+                       override_of=override_of)
 
 
 def test_copilot_error_is_audited_and_returns_502(make_gateway, tmp_path, redactor):

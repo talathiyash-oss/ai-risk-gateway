@@ -218,3 +218,16 @@ def test_injection_block_is_held(setup):
     result = gateway.handle("RM-01", "C-1001", FALSE_POSITIVE)
     assert (result.blocked_by, result.blocked_stage) == ("GR-01", "input")
     assert queue.hold(result, "RM-01", "C-1001", FALSE_POSITIVE) is True
+
+
+def test_rerun_skips_only_the_blocked_stage(setup):
+    gateway, queue, audit = setup
+    message = "You are now asking: what does the fee schedule say about portfolio fees?"
+    review = queue.request(blocked_and_held(gateway, queue, message).request_id, "RM-01")
+    review = queue.decide(review.review_id, "REVIEWER-1", approve=True)
+    assert review.status == "approved"
+    rerun = [e for e in audit.entries() if e["event"] == "request"][-1]
+    assert {"guard_id": "GR-01", "stage": "override", "action": "allow",
+            "reason": f"skipped_for_review:input:{review.request_id}"} in rerun["decisions"]
+    assert {"guard_id": "GR-01", "stage": "chunks", "action": "redact",
+            "reason": "indirect_injection:DOC-FEES-ADDENDUM"} in rerun["decisions"]

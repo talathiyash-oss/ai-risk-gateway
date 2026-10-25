@@ -18,6 +18,7 @@ from airg.guardrails.base import Action, Guardrail, GuardResult, RequestContext
 logger = logging.getLogger(__name__)
 
 GUARD_ORDER = ("GR-04", "GR-01", "GR-03", "GR-02")
+STAGES = ("input", "chunks", "output")
 BLOCK_MESSAGE = "This request can't be completed. Reference: {request_id}. You can request a review."
 RATE_LIMIT_MESSAGE = "Too many requests. Reference: {request_id}. Please wait a minute and try again."
 NOT_REVIEWABLE_MESSAGE = "This request can't be completed. Reference: {request_id}."
@@ -57,23 +58,35 @@ class Gateway:
         return GuardResult(guard_id, stage, action, f"error/fail_{mode}")
 
     def handle(self, user_id: str, client_id: str, message: str,
-               skip_guards: frozenset[str] = frozenset(),
+               skip_stages: frozenset[tuple[str, str]] = frozenset(),
                override_of: str | None = None) -> GatewayResult:
         """Run one request through the enabled guardrails and the copilot.
 
         An output-stage block logs response=None on purpose, so a leaked system prompt is not
-        persisted. skip_guards removes the guard from every stage and is recorded in the audit
-        log as an override (stage "override", referencing override_of).
+        persisted. skip_stages is a set of (guard_id, stage) pairs: each pair skips that guard at
+        that stage only, and is recorded in the audit log as an override (stage "override",
+        referencing override_of).
         """
+        if skip_stages:
+            if override_of is None:
+                raise ValueError("skip_stages requires override_of")
+            for guard_id, stage in skip_stages:
+                if guard_id not in GUARD_ORDER:
+                    raise ValueError(f"unknown guard in skip_stages: {guard_id}")
+                if stage not in STAGES:
+                    raise ValueError(f"unknown stage in skip_stages: {stage}")
         ctx = RequestContext(self._new_id(), user_id, client_id)
         start = time.perf_counter()
-        guards = [g for g in self._guards if g.guard_id not in skip_guards]
+
+        def active(stage: str) -> list[Guardrail]:
+            return [g for g in self._guards if (g.guard_id, stage) not in skip_stages]
+
         decisions: list[GuardResult] = [
-            GuardResult(g, "override", Action.ALLOW, f"skipped_for_review:{override_of}")
-            for g in sorted(skip_guards)]
+            GuardResult(g, "override", Action.ALLOW, f"skipped_for_review:{stage}:{override_of}")
+            for g, stage in sorted(skip_stages)]
 
         text = message
-        for guard in guards:
+        for guard in active("input"):
             try:
                 result = guard.check_input(ctx, text)
             except Exception:
@@ -88,7 +101,7 @@ class Gateway:
             chunks = self._copilot.retrieve(text, client_id)
         except Exception:
             return self._copilot_failure(ctx, decisions, start, text, "retrieve")
-        for guard in guards:
+        for guard in active("chunks"):
             try:
                 chunks, results = guard.check_chunks(ctx, chunks)
             except Exception:
@@ -102,7 +115,7 @@ class Gateway:
             answer = self._copilot.generate(text, client_id, chunks)
         except Exception:
             return self._copilot_failure(ctx, decisions, start, text, "generate")
-        for guard in guards:
+        for guard in active("output"):
             try:
                 result = guard.check_output(ctx, answer)
             except Exception:

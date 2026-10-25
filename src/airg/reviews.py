@@ -1,7 +1,8 @@
 """Review path for blocked RMs (FR-34, decision D-7).
 
 The block stands until a reviewer decides. Approval reruns the original request with only the
-guardrail that blocked it skipped, so every other guardrail (including GR-02 redaction) still applies.
+guardrail that blocked it skipped, and only at the stage where it blocked, so every other check
+(including GR-01 document filtering and GR-02 redaction) still applies.
 """
 from __future__ import annotations
 
@@ -69,6 +70,7 @@ class _Held:
     client_id: str
     message: str  # kept in memory only, never written to the audit log
     blocked_by: str
+    blocked_stage: str
     held_at: float
 
 
@@ -102,7 +104,7 @@ class ReviewQueue:
             self._purge()
             self._held.pop(result.request_id, None)
             self._held[result.request_id] = _Held(user_id, client_id, message, result.blocked_by,
-                                                  self._clock())
+                                                  result.blocked_stage, self._clock())
             while len(self._held) > self._max_held:
                 del self._held[next(iter(self._held))]
         return True
@@ -165,7 +167,7 @@ class ReviewQueue:
         try:
             if approve:
                 rerun = self._gateway.handle(held.user_id, held.client_id, held.message,
-                                             skip_guards=frozenset({held.blocked_by}),
+                                             skip_stages=frozenset({(held.blocked_by, held.blocked_stage)}),
                                              override_of=review.request_id)
         except BaseException:
             with self._lock:
