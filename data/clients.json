@@ -1,0 +1,730 @@
+[
+  {
+    "client_id": "C-1001",
+    "name": "Quinn Hollister",
+    "rm_id": "RM-01",
+    "account_number": "BMT-87490893",
+    "balance": 14288000,
+    "products": [
+      "Municipal Bond Ladder",
+      "Private Credit Line",
+      "Trust Account"
+    ],
+    "note": "Considering a gift to a family foundation."
+  },
+  {
+    "client_id": "C-1002",
+    "name": "Casey Radcliffe",
+    "rm_id": "RM-02",
+    "account_number": "BMT-35808537",
+    "balance": 16946000,
+    "products": [
+      "Charitable Remainder Trust",
+      "Managed Portfolio"
+    ],
+    "note": "Prefers quarterly reviews in person."
+  },
+  {
+    "client_id": "C-1003",
+    "name": "Avery Merriweather",
+    "rm_id": "RM-03",
+    "account_number": "BMT-19335534",
+    "balance": 5258000,
+    "products": [
+      "Managed Portfolio",
+      "Municipal Bond Ladder",
+      "Private Credit Line"
+    ],
+    "note": "Planning a business sale in the next two years."
+  },
+  {
+    "client_id": "C-1004",
+    "name": "Sage Thorne",
+    "rm_id": "RM-04",
+    "account_number": "BMT-16150444",
+    "balance": 12754000,
+    "products": [
+      "Cash Management",
+      "Private Credit Line",
+      "Trust Account"
+    ],
+    "note": "Wants lower exposure to equities."
+  },
+  {
+    "client_id": "C-1005",
+    "name": "Harper Ashford",
+    "rm_id": "RM-05",
+    "account_number": "BMT-98753260",
+    "balance": 626000,
+    "products": [
+      "Charitable Remainder Trust",
+      "Managed Portfolio",
+      "Trust Account"
+    ],
+    "note": "Recently added a spouse as co-trustee."
+  },
+  {
+    "client_id": "C-1006",
+    "name": "Gray Fairbanks",
+    "rm_id": "RM-06",
+    "account_number": "BMT-40587988",
+    "balance": 11396000,
+    "products": [
+      "Trust Account"
+    ],
+    "note": "Planning a business sale in the next two years."
+  },
+  {
+    "client_id": "C-1007",
+    "name": "Finley Ostrander",
+    "rm_id": "RM-07",
+    "account_number": "BMT-48840994",
+    "balance": 5432000,
+    "products": [
+      "Managed Portfolio",
+      "Trust Account"
+    ],
+    "note": "Wants lower exposure to equities."
+  },
+  {
+    "client_id": "C-1008",
+    "name": "Dana Lockhart",
+    "rm_id": "RM-08",
+    "account_number": "BMT-20709497",
+    "balance": 6104000,
+    "products": [
+      "Managed Portfolio",
+      "Municipal Bond Ladder",
+      "Trust Account"
+    ],
+    "note": "Considering a gift to a family foundation."
+  },
+  {
+    "client_id": "C-1009",
+    "name": "Sage Radcliffe",
+    "rm_id": "RM-09",
+    "account_number": "BMT-41244663",
+    "balance": 12502000,
+    "products": [
+      "Cash Management"
+    ],
+    "note": "Wants lower exposure to equities."
+  },
+  {
+    "client_id": "C-1010",
+    "name": "Casey Merriweather",
+    "rm_id": "RM-10",
+    "account_number": "BMT-23556182",
+    "balance": 268000,
+    "products": [
+      "Managed Portfolio",
+      "Private Credit Line",
+      "Trust Account"
+    ],
+    "note": "Prefers quarterly reviews in person."
+  },
+  {
+    "client_id": "C-1011",
+    "name": "Reese Galloway",
+    "rm_id": "RM-11",
+    "account_number": "BMT-61019678",
+    "balance": 12144000,
+    "products": [
+      "Managed Portfolio",
+      "Municipal Bond Ladder"
+    ],
+    "note": "Considering a gift to a family foundation."
+  },
+  {
+    "client_id": "C-1012",
+    "name": "Noel Thorne",
+    "rm_id": "RM-12",
+    "account_number": "BMT-47308985",
+    "balance": 18841000,
+    "products": [
+      "Managed Portfolio"
+    ],
+    "note": "Recently added a spouse as co-trustee."
+  },
+  {
+    "client_id": "C-1013",
+    "name": "Casey Everly",
+    "rm_id": "RM-01",
+    "account_number": "BMT-70855700",
+    "balance": 16174000,
+    "products": [
+      "Cash Management"
+    ],
+    "note": "Considering a gift to a family foundation."
+  },
+  {
+    "client_id": "C-1014",
+    "name": "Parker Calloway",
+    "rm_id": "RM-02",
+    "account_number": "BMT-95320121",
+    "balance": 4457000,
+    "products": [
+      "Cash Management",
+      "Municipal Bond Ladder",
+      "Private Credit Line"
+    ],
+    "note": "Asked about tax-loss harvesting before year end."
+  },
+  {
+    "client_id": "C-1015",
+    "name": "Kai Quill",
+    "rm_id": "RM-03",
+    "account_number": "BMT-58966946",
+    "balance": 17540000,
+    "products": [
+      "Cash Management",
+      "Municipal Bond Ladder",
+      "Private Credit Line"
+    ],
+    "note": "Recently added a spouse as co-trustee."
+  },
+  {
+    "client_id": "C-1016",
+    "name": "Avery Quill",
+    "rm_id": "RM-04",
+    "account_number": "BMT-31831063",
+    "balance": 10464000,
+    "products": [
+      "Charitable Remainder Trust",
+      "Trust Account"
+    ],
+    "note": "Planning a business sale in the next two years."
+  },
+  {
+    "client_id": "C-1017",
+    "name": "Avery Pemberton",
+    "rm_id": "RM-05",
+    "account_number": "BMT-59684848",
+    "balance": 17209000,
+    "products": [
+      "Managed Portfolio",
+      "Municipal Bond Ladder"
+    ],
+    "note": "Considering a gift to a family foundation."
+  },
+  {
+    "client_id": "C-1018",
+    "name": "Casey Hollister",
+    "rm_id": "RM-06",
+    "account_number": "BMT-57683626",
+    "balance": 2348000,
+    "products": [
+      "Cash Management",
+      "Managed Portfolio"
+    ],
+    "note": "Wants lower exposure to equities."
+  },
+  {
+    "client_id": "C-1019",
+    "name": "Finley Lockhart",
+    "rm_id": "RM-07",
+    "account_number": "BMT-38119557",
+    "balance": 7790000,
+    "products": [
+      "Cash Management",
+      "Managed Portfolio",
+      "Municipal Bond Ladder"
+    ],
+    "note": "Recently added a spouse as co-trustee."
+  },
+  {
+    "client_id": "C-1020",
+    "name": "Finley Thorne",
+    "rm_id": "RM-08",
+    "account_number": "BMT-99949389",
+    "balance": 20929000,
+    "products": [
+      "Municipal Bond Ladder"
+    ],
+    "note": "Prefers quarterly reviews in person."
+  },
+  {
+    "client_id": "C-1021",
+    "name": "Morgan Sterling",
+    "rm_id": "RM-09",
+    "account_number": "BMT-45833156",
+    "balance": 1279000,
+    "products": [
+      "Cash Management",
+      "Managed Portfolio"
+    ],
+    "note": "Considering a gift to a family foundation."
+  },
+  {
+    "client_id": "C-1022",
+    "name": "Parker Ingram",
+    "rm_id": "RM-10",
+    "account_number": "BMT-96977837",
+    "balance": 9375000,
+    "products": [
+      "Cash Management",
+      "Municipal Bond Ladder",
+      "Private Credit Line"
+    ],
+    "note": "Recently added a spouse as co-trustee."
+  },
+  {
+    "client_id": "C-1023",
+    "name": "Avery Northcott",
+    "rm_id": "RM-11",
+    "account_number": "BMT-19583482",
+    "balance": 18961000,
+    "products": [
+      "Charitable Remainder Trust",
+      "Municipal Bond Ladder",
+      "Private Credit Line"
+    ],
+    "note": "Planning a business sale in the next two years."
+  },
+  {
+    "client_id": "C-1024",
+    "name": "Oakley Hollister",
+    "rm_id": "RM-12",
+    "account_number": "BMT-91756179",
+    "balance": 6489000,
+    "products": [
+      "Managed Portfolio"
+    ],
+    "note": "Recently added a spouse as co-trustee."
+  },
+  {
+    "client_id": "C-1025",
+    "name": "Finley Brennan",
+    "rm_id": "RM-01",
+    "account_number": "BMT-95225343",
+    "balance": 14374000,
+    "products": [
+      "Charitable Remainder Trust",
+      "Private Credit Line"
+    ],
+    "note": "Planning a business sale in the next two years."
+  },
+  {
+    "client_id": "C-1026",
+    "name": "Sage Galloway",
+    "rm_id": "RM-02",
+    "account_number": "BMT-32969840",
+    "balance": 24140000,
+    "products": [
+      "Charitable Remainder Trust"
+    ],
+    "note": "Recently added a spouse as co-trustee."
+  },
+  {
+    "client_id": "C-1027",
+    "name": "Quinn Merriweather",
+    "rm_id": "RM-03",
+    "account_number": "BMT-81691040",
+    "balance": 21424000,
+    "products": [
+      "Managed Portfolio"
+    ],
+    "note": "Planning a business sale in the next two years."
+  },
+  {
+    "client_id": "C-1028",
+    "name": "Reese Thorne",
+    "rm_id": "RM-04",
+    "account_number": "BMT-42857966",
+    "balance": 24112000,
+    "products": [
+      "Managed Portfolio",
+      "Municipal Bond Ladder"
+    ],
+    "note": "Considering a gift to a family foundation."
+  },
+  {
+    "client_id": "C-1029",
+    "name": "Kai Ostrander",
+    "rm_id": "RM-05",
+    "account_number": "BMT-31931511",
+    "balance": 6482000,
+    "products": [
+      "Charitable Remainder Trust",
+      "Municipal Bond Ladder",
+      "Private Credit Line"
+    ],
+    "note": "Considering a gift to a family foundation."
+  },
+  {
+    "client_id": "C-1030",
+    "name": "Finley Merriweather",
+    "rm_id": "RM-06",
+    "account_number": "BMT-72043515",
+    "balance": 9377000,
+    "products": [
+      "Managed Portfolio",
+      "Municipal Bond Ladder"
+    ],
+    "note": "Planning a business sale in the next two years."
+  },
+  {
+    "client_id": "C-1031",
+    "name": "Logan Jessup",
+    "rm_id": "RM-07",
+    "account_number": "BMT-60929647",
+    "balance": 18283000,
+    "products": [
+      "Managed Portfolio"
+    ],
+    "note": "Recently added a spouse as co-trustee."
+  },
+  {
+    "client_id": "C-1032",
+    "name": "Parker Brennan",
+    "rm_id": "RM-08",
+    "account_number": "BMT-46231783",
+    "balance": 17963000,
+    "products": [
+      "Managed Portfolio"
+    ],
+    "note": "Considering a gift to a family foundation."
+  },
+  {
+    "client_id": "C-1033",
+    "name": "Harper Calloway",
+    "rm_id": "RM-09",
+    "account_number": "BMT-95899313",
+    "balance": 5699000,
+    "products": [
+      "Charitable Remainder Trust",
+      "Private Credit Line"
+    ],
+    "note": "Considering a gift to a family foundation."
+  },
+  {
+    "client_id": "C-1034",
+    "name": "Avery Delacroix",
+    "rm_id": "RM-10",
+    "account_number": "BMT-84752529",
+    "balance": 13391000,
+    "products": [
+      "Municipal Bond Ladder"
+    ],
+    "note": "Planning a business sale in the next two years."
+  },
+  {
+    "client_id": "C-1035",
+    "name": "Taylor Ingram",
+    "rm_id": "RM-11",
+    "account_number": "BMT-39476249",
+    "balance": 320000,
+    "products": [
+      "Private Credit Line",
+      "Trust Account"
+    ],
+    "note": "Asked about tax-loss harvesting before year end."
+  },
+  {
+    "client_id": "C-1036",
+    "name": "Elliot Brennan",
+    "rm_id": "RM-12",
+    "account_number": "BMT-53524491",
+    "balance": 14111000,
+    "products": [
+      "Cash Management",
+      "Charitable Remainder Trust",
+      "Private Credit Line"
+    ],
+    "note": "Considering a gift to a family foundation."
+  },
+  {
+    "client_id": "C-1037",
+    "name": "Reese Radcliffe",
+    "rm_id": "RM-01",
+    "account_number": "BMT-17507864",
+    "balance": 6472000,
+    "products": [
+      "Managed Portfolio",
+      "Municipal Bond Ladder"
+    ],
+    "note": "Wants lower exposure to equities."
+  },
+  {
+    "client_id": "C-1038",
+    "name": "Indy Ostrander",
+    "rm_id": "RM-02",
+    "account_number": "BMT-40742311",
+    "balance": 24358000,
+    "products": [
+      "Charitable Remainder Trust",
+      "Managed Portfolio",
+      "Trust Account"
+    ],
+    "note": "Prefers quarterly reviews in person."
+  },
+  {
+    "client_id": "C-1039",
+    "name": "Dana Thorne",
+    "rm_id": "RM-03",
+    "account_number": "BMT-14308421",
+    "balance": 19392000,
+    "products": [
+      "Cash Management",
+      "Charitable Remainder Trust"
+    ],
+    "note": "Considering a gift to a family foundation."
+  },
+  {
+    "client_id": "C-1040",
+    "name": "Finley Kensington",
+    "rm_id": "RM-04",
+    "account_number": "BMT-52339391",
+    "balance": 2113000,
+    "products": [
+      "Charitable Remainder Trust",
+      "Managed Portfolio",
+      "Municipal Bond Ladder"
+    ],
+    "note": "Wants lower exposure to equities."
+  },
+  {
+    "client_id": "C-1041",
+    "name": "Taylor Kensington",
+    "rm_id": "RM-05",
+    "account_number": "BMT-63843426",
+    "balance": 2476000,
+    "products": [
+      "Managed Portfolio",
+      "Municipal Bond Ladder",
+      "Private Credit Line"
+    ],
+    "note": "Wants lower exposure to equities."
+  },
+  {
+    "client_id": "C-1042",
+    "name": "Indy Merriweather",
+    "rm_id": "RM-06",
+    "account_number": "BMT-45935572",
+    "balance": 8317000,
+    "products": [
+      "Cash Management",
+      "Charitable Remainder Trust",
+      "Managed Portfolio"
+    ],
+    "note": "Planning a business sale in the next two years."
+  },
+  {
+    "client_id": "C-1043",
+    "name": "Jordan Ostrander",
+    "rm_id": "RM-07",
+    "account_number": "BMT-18883684",
+    "balance": 21790000,
+    "products": [
+      "Cash Management",
+      "Charitable Remainder Trust",
+      "Trust Account"
+    ],
+    "note": "Asked about tax-loss harvesting before year end."
+  },
+  {
+    "client_id": "C-1044",
+    "name": "Casey Jessup",
+    "rm_id": "RM-08",
+    "account_number": "BMT-38317637",
+    "balance": 6943000,
+    "products": [
+      "Charitable Remainder Trust",
+      "Municipal Bond Ladder",
+      "Trust Account"
+    ],
+    "note": "Asked about tax-loss harvesting before year end."
+  },
+  {
+    "client_id": "C-1045",
+    "name": "Jordan Delacroix",
+    "rm_id": "RM-09",
+    "account_number": "BMT-86125617",
+    "balance": 13219000,
+    "products": [
+      "Charitable Remainder Trust"
+    ],
+    "note": "Recently added a spouse as co-trustee."
+  },
+  {
+    "client_id": "C-1046",
+    "name": "Indy Quill",
+    "rm_id": "RM-10",
+    "account_number": "BMT-52235350",
+    "balance": 10080000,
+    "products": [
+      "Managed Portfolio",
+      "Trust Account"
+    ],
+    "note": "Prefers quarterly reviews in person."
+  },
+  {
+    "client_id": "C-1047",
+    "name": "Parker Jessup",
+    "rm_id": "RM-11",
+    "account_number": "BMT-38538251",
+    "balance": 15267000,
+    "products": [
+      "Cash Management",
+      "Charitable Remainder Trust",
+      "Managed Portfolio"
+    ],
+    "note": "Wants lower exposure to equities."
+  },
+  {
+    "client_id": "C-1048",
+    "name": "Gray Pemberton",
+    "rm_id": "RM-12",
+    "account_number": "BMT-97971488",
+    "balance": 7234000,
+    "products": [
+      "Charitable Remainder Trust",
+      "Municipal Bond Ladder",
+      "Trust Account"
+    ],
+    "note": "Prefers quarterly reviews in person."
+  },
+  {
+    "client_id": "C-1049",
+    "name": "Blake Calloway",
+    "rm_id": "RM-01",
+    "account_number": "BMT-77005685",
+    "balance": 8254000,
+    "products": [
+      "Municipal Bond Ladder",
+      "Trust Account"
+    ],
+    "note": "Planning a business sale in the next two years."
+  },
+  {
+    "client_id": "C-1050",
+    "name": "Sage Northcott",
+    "rm_id": "RM-02",
+    "account_number": "BMT-63100814",
+    "balance": 18050000,
+    "products": [
+      "Cash Management",
+      "Managed Portfolio",
+      "Trust Account"
+    ],
+    "note": "Recently added a spouse as co-trustee."
+  },
+  {
+    "client_id": "C-1051",
+    "name": "Logan Pemberton",
+    "rm_id": "RM-03",
+    "account_number": "BMT-96282117",
+    "balance": 18423000,
+    "products": [
+      "Charitable Remainder Trust",
+      "Managed Portfolio"
+    ],
+    "note": "Considering a gift to a family foundation."
+  },
+  {
+    "client_id": "C-1052",
+    "name": "Noel Ostrander",
+    "rm_id": "RM-04",
+    "account_number": "BMT-71586053",
+    "balance": 8916000,
+    "products": [
+      "Managed Portfolio"
+    ],
+    "note": "Recently added a spouse as co-trustee."
+  },
+  {
+    "client_id": "C-1053",
+    "name": "Dana Delacroix",
+    "rm_id": "RM-05",
+    "account_number": "BMT-29175900",
+    "balance": 18378000,
+    "products": [
+      "Trust Account"
+    ],
+    "note": "Asked about tax-loss harvesting before year end."
+  },
+  {
+    "client_id": "C-1054",
+    "name": "Jordan Northcott",
+    "rm_id": "RM-06",
+    "account_number": "BMT-45551614",
+    "balance": 20069000,
+    "products": [
+      "Charitable Remainder Trust"
+    ],
+    "note": "Asked about tax-loss harvesting before year end."
+  },
+  {
+    "client_id": "C-1055",
+    "name": "Casey Ashford",
+    "rm_id": "RM-07",
+    "account_number": "BMT-28740864",
+    "balance": 6921000,
+    "products": [
+      "Charitable Remainder Trust",
+      "Private Credit Line",
+      "Trust Account"
+    ],
+    "note": "Asked about tax-loss harvesting before year end."
+  },
+  {
+    "client_id": "C-1056",
+    "name": "Oakley Calloway",
+    "rm_id": "RM-08",
+    "account_number": "BMT-43101783",
+    "balance": 1914000,
+    "products": [
+      "Charitable Remainder Trust"
+    ],
+    "note": "Planning a business sale in the next two years."
+  },
+  {
+    "client_id": "C-1057",
+    "name": "Harper Kensington",
+    "rm_id": "RM-09",
+    "account_number": "BMT-85345555",
+    "balance": 9316000,
+    "products": [
+      "Managed Portfolio"
+    ],
+    "note": "Asked about tax-loss harvesting before year end."
+  },
+  {
+    "client_id": "C-1058",
+    "name": "Quinn Brennan",
+    "rm_id": "RM-10",
+    "account_number": "BMT-82340307",
+    "balance": 4536000,
+    "products": [
+      "Municipal Bond Ladder",
+      "Private Credit Line",
+      "Trust Account"
+    ],
+    "note": "Wants lower exposure to equities."
+  },
+  {
+    "client_id": "C-1059",
+    "name": "Parker Quill",
+    "rm_id": "RM-11",
+    "account_number": "BMT-45264581",
+    "balance": 23373000,
+    "products": [
+      "Cash Management",
+      "Managed Portfolio"
+    ],
+    "note": "Prefers quarterly reviews in person."
+  },
+  {
+    "client_id": "C-1060",
+    "name": "Jordan Fairbanks",
+    "rm_id": "RM-12",
+    "account_number": "BMT-88461803",
+    "balance": 2715000,
+    "products": [
+      "Cash Management",
+      "Managed Portfolio",
+      "Municipal Bond Ladder"
+    ],
+    "note": "Asked about tax-loss harvesting before year end."
+  }
+]
