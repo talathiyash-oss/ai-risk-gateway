@@ -58,8 +58,9 @@ def create_app(services: Services) -> FastAPI:
             template = NOT_REVIEWABLE_MESSAGE
         else:
             template = ERROR_MESSAGE
+        status = "error" if result.http_status in (502, 503) else "blocked"
         return JSONResponse(status_code=result.http_status, content={
-            "request_id": result.request_id, "status": "blocked",
+            "request_id": result.request_id, "status": status,
             "message": template.format(request_id=result.request_id),
             "review_available": reviewable})
 
