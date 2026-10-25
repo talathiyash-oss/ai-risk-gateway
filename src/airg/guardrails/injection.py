@@ -7,11 +7,11 @@ from airg.copilot import Chunk
 from airg.guardrails.base import Action, Guardrail, GuardResult, RequestContext
 
 INJECTION_PATTERNS = [
-    re.compile(r"\bignore (all |any )?(the )?(previous|prior|above|earlier) (instructions|rules|directions)\b", re.I),
-    re.compile(r"\bdisregard (all |any )?(the )?(previous|prior|above|earlier) (instructions|rules)\b", re.I),
-    re.compile(r"\byou are now\b", re.I),
-    re.compile(r"\b(reveal|print|show|repeat) (me )?(your|the) (system prompt|instructions)\b", re.I),
-    re.compile(r"\bnote to (the )?assistant\b", re.I),
+    re.compile(r"\bignore\s+(all\s+|any\s+)?(the\s+)?(previous|prior|above|earlier)\s+(instructions|rules|directions)\b", re.I),
+    re.compile(r"\bdisregard\s+(all\s+|any\s+)?(the\s+)?(previous|prior|above|earlier)\s+(instructions|rules)\b", re.I),
+    re.compile(r"\byou\s+are\s+now\b", re.I),
+    re.compile(r"\b(reveal|print|show|repeat)\s+(me\s+)?(your|the)\s+(system\s+prompt|instructions)\b", re.I),
+    re.compile(r"\bnote\s+to\s+(the\s+)?assistant\b", re.I),
 ]
 
 
