@@ -39,6 +39,8 @@ class Gateway:
                  audit=None, id_factory: Callable[[], str] | None = None):
         self._config = config
         self._copilot = copilot
+        if config.guardrails["GR-05"].enabled and audit is None:
+            raise ValueError("GR-05 is enabled but no audit log was provided")
         self._audit = audit if config.guardrails["GR-05"].enabled else None
         self._new_id = id_factory or (lambda: uuid.uuid4().hex[:12])
         for guard_id in GUARD_ORDER:

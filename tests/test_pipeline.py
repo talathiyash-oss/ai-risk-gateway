@@ -28,7 +28,8 @@ def make_gateway(records, redactor, make_config):
         all_guards = {"GR-01": InjectionGuard(), "GR-02": PiiGuard(records, redactor),
                       "GR-03": PromptLeakGuard(), "GR-04": RateLimitGuard()}
         all_guards.update(guards or {})
-        return Gateway(make_config(set(enabled), fail_modes), copilot, all_guards, audit), copilot
+        enabled = set(enabled) if audit is not None else set(enabled) - {"GR-05"}
+        return Gateway(make_config(enabled, fail_modes), copilot, all_guards, audit), copilot
     return _make
 
 
@@ -192,13 +193,20 @@ def test_copilot_error_is_audited_and_returns_502(make_gateway, tmp_path, redact
 def test_enabled_guard_missing_raises(records, redactor, make_config):
     guards = {"GR-01": InjectionGuard(), "GR-03": PromptLeakGuard(), "GR-04": RateLimitGuard()}
     with pytest.raises(ValueError, match="GR-02"):
-        Gateway(make_config(set(GUARD_IDS)), Copilot(records), guards)
+        Gateway(make_config(set(GUARD_IDS) - {"GR-05"}), Copilot(records), guards)
 
 
 def test_guard_id_mismatch_raises(records, redactor, make_config):
     guards = {"GR-01": InjectionGuard(), "GR-02": InjectionGuard(), "GR-03": PromptLeakGuard(),
               "GR-04": RateLimitGuard()}
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="GR-02"):
+        Gateway(make_config(set(GUARD_IDS) - {"GR-05"}), Copilot(records), guards)
+
+
+def test_enabled_audit_without_log_raises(records, redactor, make_config):
+    guards = {"GR-01": InjectionGuard(), "GR-02": PiiGuard(records, redactor),
+              "GR-03": PromptLeakGuard(), "GR-04": RateLimitGuard()}
+    with pytest.raises(ValueError, match="GR-05"):
         Gateway(make_config(set(GUARD_IDS)), Copilot(records), guards)
 
 
