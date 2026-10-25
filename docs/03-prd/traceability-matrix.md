@@ -30,7 +30,7 @@ Version 0.2 (draft), linked to PRD v0.2. Test case IDs are reserved now and writ
 | BO-3 | US-02 | FR-03 Policy decisions | Must | TC-03a, TC-03b | — |
 | BO-3 | US-02 | NFR-06 No detection detail in block messages | Must | TC-03b | — |
 | BO-3 | — | D-2 False-positive limit (via FR-16) | Must | TC-16c | All |
-| BO-4 Audit evidence | US-10 | FR-11 Decision logging | Must | TC-11a, TC-11b | GR-05 |
+| BO-4 Audit evidence | US-10 | FR-11 Decision logging | Must | TC-11a, TC-11b, TC-11c, TC-11d | GR-05 |
 | BO-4 | US-12 | FR-12 Log export | Should | TC-12a | GR-05 |
 | BO-4 | US-11, US-13 | FR-27 Compliance view | Must | TC-27a | All |
 | BO-4 | US-14 | FR-13 Synthetic dataset | Must | TC-13a | — |

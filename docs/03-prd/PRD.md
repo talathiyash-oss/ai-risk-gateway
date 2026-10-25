@@ -138,6 +138,8 @@ Per-user limits on requests per minute and tokens per day. [Assumed defaults: 20
 Every request produces one log entry: timestamp, request ID, user ID, session client ID, guardrails evaluated, decision per guardrail, reason code, latency. No raw PII is written to the log.
 - *Given* any request, *when* it completes, *then* exactly one log entry exists with all listed fields.
 - *Given* a prompt contains an SSN, *when* the log entry is written, *then* the log contains `<US_SSN>`, not the SSN.
+- *Given* any request, *when* the log entry is written, *then* it contains only redacted prompt and response text, never the raw text (GDPR data minimization, Compliance interview 2026-10-25).
+- *Given* a retention period set in configuration, *when* a log entry is older than that period, *then* it is deleted. The period is set by Compliance.
 
 **FR-12 Log export** (US-12) Should
 Export the audit log for a date range as JSON Lines.
@@ -350,6 +352,7 @@ The block-rate target is a hygiene check on our own suite, not proof of real-wor
 | DEP-2 | BRD v1.0 signed off |
 | DEP-3 | Open-source libraries: FastAPI, Microsoft Presidio (with spaCy model), Streamlit, NumPy |
 | DEP-4 | Phase 4 verification of framework citations |
+| DEP-5 | GDPR Data Protection Impact Assessment for the copilot, owned by Compliance and the Data Protection Officer, required before Luxembourg go-live. The gateway's data-flow and PII-handling evidence is an input. |
 
 ### Risks
 
@@ -361,6 +364,8 @@ The block-rate target is a hygiene check on our own suite, not proof of real-wor
 | RISK-04 | Scope creep from stretch items | D-6 decision gate at the end of Sprint 2 |
 | RISK-05 | Framework clause IDs cited incorrectly | Phase 4 verification against primary sources |
 | RISK-06 | Dollar outputs taken as precise predictions | Always show ranges, P90 and provenance; label it a model, not a forecast |
+| RISK-08 | Model Risk Management (SR 11-7) hasn't reviewed the copilot and may require independent validation that isn't in anyone's plan, delaying rollout | Engage Model Risk early; give them the reproducible harness and test suite (FR-15, FR-16, US-14) as validation evidence |
+| RISK-09 | Three external dates cluster: budget lock mid-February, NYDFS Part 500 certification April 15, 2027, Luxembourg go-live July 2027 | Release plan works back from mid-February; compliance view (FR-27) produces evidence usable for the April certification |
 | RISK-07 | The 2027 budget locks in mid-February, six weeks before the Risk Committee deadline. A late funding request means controls aren't funded until July, the month of full rollout | Preliminary EAL and ROI results ready by early February 2027, with the full assessment by end of March |
 
 ---
@@ -371,7 +376,9 @@ The block-rate target is a hygiene check on our own suite, not proof of real-wor
 |---|---|---|
 | 1 | FR-01–FR-14, NFR-06 | An attack succeeds with guardrails off and is blocked with them on; audit log entries |
 | 2 | FR-15–FR-22, FR-31, NFR-01, NFR-03 | Harness results with confidence intervals; FAIR outputs from the command line, including the four S1 strategies; FR-30 decision |
-| 3 | FR-23–FR-29, NFR-04, NFR-05, NFR-07; FR-30 if approved | Full CISO dashboard walkthrough |
+| 3 | FR-23–FR-29, FR-33, NFR-04, NFR-05, NFR-07; FR-30 if approved | Full CISO dashboard walkthrough |
+
+**Release deliverables beyond the software:** CISO one-page brief; **EU AI Act classification memo** for Compliance to use with the CSSF (from the applicability analysis); README.
 
 ---
 
