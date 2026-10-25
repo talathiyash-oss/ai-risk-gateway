@@ -59,3 +59,56 @@ def test_record_event(tmp_path, redactor, clock):
     log = AuditLog(tmp_path / "audit.jsonl", redactor, clock=clock)
     log.record_event("review_requested", review_id="rv-1")
     assert log.entries() == [{"event": "review_requested", "timestamp": clock.t, "review_id": "rv-1"}]
+
+
+def test_record_event_scrubs_free_text(tmp_path, redactor, clock):
+    path = tmp_path / "audit.jsonl"
+    log = AuditLog(path, redactor, clock=clock)
+    log.record_event("note", text="SSN 536-22-1987")
+    raw = path.read_text()
+    assert "536-22-1987" not in raw
+    assert "<US_SSN>" in raw
+
+
+def test_concurrent_writes_keep_every_line_valid(tmp_path, redactor, clock):
+    import threading
+
+    path = tmp_path / "audit.jsonl"
+    log = AuditLog(path, redactor, clock=clock)
+    big = "x" * 10_000
+
+    def worker(n):
+        for i in range(25):
+            log.record_event("note", worker=n, i=i, text=big)
+
+    threads = [threading.Thread(target=worker, args=(n,)) for n in range(8)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+
+    assert len(log.entries()) == 200
+    lines = path.read_text().splitlines()
+    assert len(lines) == 200
+    for line in lines:
+        json.loads(line)
+
+
+def test_entries_skip_corrupt_lines(tmp_path, redactor, clock):
+    path = tmp_path / "audit.jsonl"
+    log = AuditLog(path, redactor, clock=clock)
+    log.record_event("request", request_id="first")
+    with path.open("a") as f:
+        f.write("{not json\n")
+    log.record_event("request", request_id="second")
+    assert [e["request_id"] for e in log.entries()] == ["first", "second"]
+
+
+def test_purge_leaves_no_temp_file(tmp_path, redactor, clock):
+    log = AuditLog(tmp_path / "audit.jsonl", redactor, clock=clock)
+    clock.t = 0.0
+    log.record_event("request", request_id="old")
+    clock.t = 100 * 86_400
+    log.record_event("request", request_id="new")
+    assert log.purge(retention_days=30) == 1
+    assert list(tmp_path.glob("*.tmp")) == []
