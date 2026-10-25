@@ -40,6 +40,7 @@ Version 0.2 (draft), linked to PRD v0.2. Test case IDs are reserved now and writ
 | BO-4 | — | FR-04 Fail modes (D-1) | Must | TC-04a, TC-04b | All |
 | BO-5 Rank controls by ROI | US-05 | FR-22 ROI per control | Must | TC-22a, TC-22b | All |
 | BO-5 | US-05 | FR-25 Control view | Must | TC-25a | All |
+| BO-5 | US-05 | FR-33 Compare alternatives | Must | TC-33a | All |
 | BO-5 | US-07 | FR-02 Guardrail switches | Must | TC-02a | All |
 | BO-5 | US-07 | FR-14 Baseline vulnerabilities | Must | TC-14a | — |
 | BO-5 | US-09 | FR-28 What-if analysis | Should | TC-28a | — |
@@ -52,7 +53,7 @@ Version 0.2 (draft), linked to PRD v0.2. Test case IDs are reserved now and writ
 | BO-2 | 5 | None |
 | BO-3 | 6 | None |
 | BO-4 | 7 | None |
-| BO-5 | 4 | None |
+| BO-5 | 5 | None |
 
 Every Must user story (US-01–07, US-10, US-11, US-14) maps to at least one Must requirement.
 

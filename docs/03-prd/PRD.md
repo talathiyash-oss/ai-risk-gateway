@@ -198,6 +198,11 @@ Per scenario and in total, without and with controls: EAL, P10, P50, P90, and a 
 ROI = (EAL reduction − control cost) ÷ control cost. Control cost = annual run cost + friction cost. Friction cost = false-positive rate × annual benign queries × minutes lost per false block ÷ 60 × RM loaded hourly rate. Annual benign queries = RMs × queries per RM per day × working days, taken from `docs/00-scenario.md`. Minutes lost and hourly rate are PERT ranges (D-4), so friction cost and ROI are simulated and reported as ranges.
 - *Given* most-likely values of EAL reduction $500,000, run cost $40,000, FP rate 1%, 1,125,000 annual benign queries, 3 minutes per block, $95/hour, *when* ROI is calculated, *then* friction cost = $53,437.50, control cost = $93,437.50, ROI ≈ 4.35 (435%).
 - *Given* the scenario doc changes the number of RMs, *when* the engine reruns, *then* annual benign queries and friction cost update with no other edits.
+- *Given* a control's EAL reduction is less than 3 times its control cost (the CFO's funding test), *when* results are shown, *then* the control is flagged "Below 3:1, consider accepting the risk."
+
+**FR-33 Compare alternatives, including doing nothing** (US-05) Must
+The control view compares our guardrails against two alternatives: **accept the risk** (no new controls, cost $0) and a **vendor AI firewall** modelled as a single control at $250K a year, with assumed effectiveness labelled as Assumed.
+- *Given* a completed run, *when* the CISO opens the control view, *then* "accept the risk," the vendor firewall and the recommended guardrail set appear side by side with EAL, P90, cost and ROI.
 
 ### 4.10 Dashboard
 
@@ -332,6 +337,8 @@ The block-rate target is a hygiene check on our own suite, not proof of real-wor
 | A-2 | D-4 hourly cost and minutes-lost ranges are reasonable for a US regional bank (hourly cost to be benchmarked in the BRD) |
 | A-5 | Year-one budget for AI security controls is about $400K (CISO interview, 2026-10-25); total recommended control cost should fit within it, or the ROI case must justify more |
 | A-6 | The permission-aware search index fix (FR-31) is about three months away and won't be ready for the January 2027 pilot, so the gateway serves as the interim control (CISO interview) |
+| A-7 | No insurance recovery is assumed. The cyber policy has a $5M retention and may not cover AI incidents (CFO interview, 2026-10-25) |
+| A-8 | The CFO counts about $2M a year of the $4.1M business case as hard value; friction cost is compared against $2M |
 | A-4 | Adaptive-attacker degradation of 0% / 15% / 40% is a reasonable starting assumption (D-5); shown as Assumed and adjustable in FR-28 |
 | A-3 | Public breach-cost benchmarks for the financial sector are a fair basis for loss magnitude |
 
@@ -354,6 +361,7 @@ The block-rate target is a hygiene check on our own suite, not proof of real-wor
 | RISK-04 | Scope creep from stretch items | D-6 decision gate at the end of Sprint 2 |
 | RISK-05 | Framework clause IDs cited incorrectly | Phase 4 verification against primary sources |
 | RISK-06 | Dollar outputs taken as precise predictions | Always show ranges, P90 and provenance; label it a model, not a forecast |
+| RISK-07 | The 2027 budget locks in mid-February, six weeks before the Risk Committee deadline. A late funding request means controls aren't funded until July, the month of full rollout | Preliminary EAL and ROI results ready by early February 2027, with the full assessment by end of March |
 
 ---
 
@@ -374,6 +382,7 @@ The block-rate target is a hygiene check on our own suite, not proof of real-wor
 | Q-1 | ~~Bank name, size, number of RMs, query volume~~ | Resolved 2026-10-23: Brindlemoor Trust, see `docs/00-scenario.md` |
 | Q-2 | Are BO-1 to BO-5 and the 60% target right? | BRD |
 | Q-3 | ~~What is the Bank's risk appetite for this copilot?~~ | Partly resolved 2026-10-25 in the CISO interview: EAL under $1M and P90 under about $5M. These are Daniel's personal thresholds, not yet agreed by the Risk Committee; the BRD formalizes them. |
+| Q-6 | Does the cyber insurance policy cover AI-related incidents? | CFO / insurance broker; BRD |
 | Q-5 | Should BO-2 ("reduce EAL by at least 60%") be replaced by "bring EAL within risk appetite"? | BRD |
 | Q-4 | ~~Confirm decisions D-1 to D-6~~ | Resolved 2026-10-23, see §6 |
 
