@@ -172,3 +172,17 @@ def test_guard_id_mismatch_raises(records, redactor, make_config):
               "GR-04": RateLimitGuard()}
     with pytest.raises(ValueError):
         Gateway(make_config(set(GUARD_IDS)), Copilot(records), guards)
+
+
+def test_other_clients_records_never_reach_the_answer(make_gateway, records):
+    client = next(r for r in records if "Managed Portfolio" in r.products)
+    gateway, _ = make_gateway()
+    result = gateway.handle("RM-01", client.client_id, "What is the balance on my client's portfolio?")
+    assert result.status == "ok"
+    assert f"${client.balance:,}" in result.answer
+    for other in records:
+        if other.client_id == client.client_id:
+            continue
+        assert f"${other.balance:,}" not in result.answer
+        if other.note != client.note:
+            assert other.note not in result.answer

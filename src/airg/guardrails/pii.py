@@ -1,8 +1,10 @@
-"""GR-02: PII redaction in prompts (FR-07) and cross-client leak check in answers (FR-08)."""
+"""GR-02: PII redaction in prompts (FR-07), entitlement filter on retrieved records (D-9) and
+cross-client leak check in answers (FR-08, kept as defence in depth)."""
 from __future__ import annotations
 
 import re
 
+from airg.copilot import Chunk
 from airg.data import ClientRecord
 from airg.guardrails.base import Action, Guardrail, GuardResult, RequestContext
 from airg.redaction import PiiRedactor, get_redactor
@@ -31,6 +33,18 @@ class PiiGuard(Guardrail):
         if entities:
             return GuardResult(self.guard_id, "input", Action.REDACT, "pii:" + ",".join(entities), redacted)
         return GuardResult(self.guard_id, "input", Action.ALLOW, "ok")
+
+    def check_chunks(self, ctx: RequestContext, chunks: list[Chunk]) -> tuple[list[Chunk], list[GuardResult]]:
+        """Drop records that belong to a client other than the session client (D-9)."""
+        kept, dropped = [], []
+        for chunk in chunks:
+            if chunk.client_id is None or chunk.client_id == ctx.client_id:
+                kept.append(chunk)
+            else:
+                dropped.append(chunk.doc_id)
+        if not dropped:
+            return kept, []
+        return kept, [GuardResult(self.guard_id, "chunks", Action.REDACT, "entitlement:" + ",".join(sorted(dropped)))]
 
     def check_output(self, ctx: RequestContext, text: str) -> GuardResult:
         leaked: set[str] = set()

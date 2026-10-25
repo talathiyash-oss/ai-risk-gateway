@@ -90,3 +90,27 @@ def test_reason_lists_all_leaked_clients(records, redactor):
     result = PiiGuard(records, redactor).check_output(ctx, response)
     ids = sorted([a.client_id, b.client_id])
     assert result.reason == f"cross_client:{me.client_id}->{ids[0]},{ids[1]}"
+
+
+def test_check_chunks_drops_other_clients_records(records, redactor):
+    from airg.copilot import Chunk, record_to_chunk
+    me, a, b = records[0], records[1], records[2]
+    ctx = RequestContext("req-1", "RM-01", me.client_id)
+    policy = Chunk("DOC-FEES", "Fee schedule text", None)
+    chunks = [record_to_chunk(b), record_to_chunk(me), policy, record_to_chunk(a)]
+    kept, results = PiiGuard(records, redactor).check_chunks(ctx, chunks)
+    assert [c.doc_id for c in kept] == [f"REC-{me.client_id}", "DOC-FEES"]
+    ids = sorted([f"REC-{a.client_id}", f"REC-{b.client_id}"])
+    assert len(results) == 1
+    r = results[0]
+    assert (r.guard_id, r.stage, r.action, r.reason) == ("GR-02", "chunks", Action.REDACT,
+                                                         "entitlement:" + ",".join(ids))
+
+
+def test_check_chunks_allows_entitled_chunks(records, redactor):
+    from airg.copilot import Chunk, record_to_chunk
+    me = records[0]
+    ctx = RequestContext("req-1", "RM-01", me.client_id)
+    chunks = [record_to_chunk(me), Chunk("DOC-KYC", "KYC text", None)]
+    kept, results = PiiGuard(records, redactor).check_chunks(ctx, chunks)
+    assert kept == chunks and results == []
