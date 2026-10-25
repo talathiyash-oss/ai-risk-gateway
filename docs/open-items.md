@@ -11,3 +11,9 @@ Items that block or shape a later phase. Each one has an owner and a phase by wh
 | OI-5 | **Shadow AI keeps residual risk above appetite.** The preliminary estimate leaves ~$2.2M EAL even with the best option, mostly from S5, which the gateway can't reduce. A separate shadow AI initiative (web filtering, training, acceptable use) is recommended. | 2026-10-25, BRD business case | Daniel (CISO) | Risk Committee submission (end of March 2027) | Open |
 
 Related PRD open questions: Q-5, Q-6, Q-7.
+
+## Gate decisions
+
+| ID | Date | Decision | Consequence |
+|---|---|---|---|
+| GD-1 | 2026-10-25 | The product owner started the build (Phases 4–5) with **BRD v0.9 and PRD v0.3 not yet signed off**. The CFO and CISO reviews of the BRD and the PRD sign-off are deferred. | OI-1 to OI-5 carry into the build. Requirements may change after the reviews, so Sprint 1 starts with the parts least likely to change: the simulated copilot, the gateway core and the guardrails. |
