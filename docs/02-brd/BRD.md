@@ -5,15 +5,15 @@
 | Client | Brindlemoor Trust (fictional) |
 | Sponsor | Daniel, CISO (Accountable, RACI) |
 | Author | Yash Talathi, Product owner |
-| Version | 0.1 (draft) |
-| Status | In progress |
+| Version | 0.9 (draft for review) |
+| Status | Ready for CFO and CISO review |
 | Related | Problem statement (`docs/01-discovery/problem-statement.md`), sources (`sources.md`), PRD (`docs/03-prd/PRD.md`) |
 
 ---
 
 ## 1. Executive Summary
 
-*Written last.*
+Brindlemoor's board has made full-rollout funding for its RM copilot conditional on a dollar-based risk assessment by the end of March 2027, and an October incident, in which an RM saw another client's balance, showed the risk is real. A preliminary estimate puts the cost of doing nothing at about **$4.2M a year** (range $0.2M–$26.7M): roughly four times the CISO's $1M comfort level, and more than the copilot's $2M of hard value. Runtime gateway guardrails reduce that by about $1.7M for about $227K a year, a **7.6 : 1** return that clears the CFO's 3:1 test and fits the $400K budget, while the proposed vendor firewall returns about 1.2 : 1 on current assumptions. No option alone brings the bank within appetite, because shadow AI, RMs using personal AI tools, is beyond the gateway's reach, so we recommend a separate shadow AI initiative owned by the CISO. These figures are preliminary and are replaced by measured, simulated results before the CFO's mid-February budget lock.
 
 ---
 
@@ -224,4 +224,10 @@ Sources and dates: `sources.md` (G-1 to G-3, R-1 to R-4). Items marked ⚠️ th
 
 ## 10. Approvals
 
-*Pending.*
+| Role | Name | Decision | Date |
+|---|---|---|---|
+| Sponsor (Accountable) | Daniel, CISO | | |
+| Funding (Accountable) | Helen, CFO | | |
+| Consulted | Rahul, Head of Compliance | | |
+| Consulted | Marcus, Head of US Private Wealth | | |
+| Author | Yash Talathi, Product owner | | |
