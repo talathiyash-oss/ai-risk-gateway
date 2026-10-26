@@ -5,6 +5,7 @@ import pytest
 from airg.fair.effectiveness import (NO_CONTROL, false_positive_rate, measured_block_rate,
                                      vulnerabilities, vulnerability_from_block_rate)
 from airg.fair.inputs import Pert, load_model
+from airg.stats import wilson_interval
 
 DEGRADATION = Pert(0.0, 0.15, 0.40, "Assumed", "D-5")
 
@@ -26,10 +27,9 @@ def test_prd_fr20_example():
 
 def test_measured_block_rate_is_relative_to_baseline(synthetic_harness):
     block, (lo, hi) = measured_block_rate(synthetic_harness, "all_on", ("LLM02-cross-client",))
-    r = 0.1
-    se = math.sqrt(0.9 / 4)
+    wlo, whi = wilson_interval(4, 40)
     assert block == pytest.approx(0.9)
-    assert (lo, hi) == (pytest.approx(1 - r * math.exp(1.96 * se)), pytest.approx(1 - r * math.exp(-1.96 * se)))
+    assert (lo, hi) == (pytest.approx(1 - whi), pytest.approx(1 - wlo))
 
 
 def test_rate_limit_block_rate_only_for_gateway_strategies(synthetic_harness):
@@ -91,8 +91,7 @@ def test_thin_baseline_gives_no_measurement():
 
 def test_zero_successes_keep_point_estimate():
     block, (lo, hi) = measured_block_rate(harness_with(60, 0), "all_on", ("LLM01-direct",))
-    assert block == 1.0
-    assert 0 < lo < hi <= 1.0
+    assert 0 < lo <= block <= hi <= 1.0
 
 
 def test_empty_strategy_sample_gives_no_measurement():
@@ -110,8 +109,8 @@ def test_pools_only_common_categories(model):
     assert expected is not None
     assert expected[0] == pytest.approx(0.9)
     v = vulnerabilities(model, strategy(model, "gateway"), h)[scenario.scenario_id]
-    if len(scenario.harness_categories) > 1:
-        assert "categories measured: LLM01-direct" in v.source
+    assert len(scenario.harness_categories) == 3
+    assert "categories measured: LLM01-direct" in v.source
 
 
 @pytest.mark.parametrize("k0", [10, 40])
@@ -135,3 +134,10 @@ def test_strategy_without_harness_mapping_uses_assumed(model, synthetic_harness)
     assert vendor.harness_strategy is None
     v = vulnerabilities(model, vendor, synthetic_harness)
     assert all(p.provenance != "Measured" for p in v.values())
+
+
+def test_full_baseline_reproduces_prd_fr20(model):
+    h = harness_with(40, 3, "LLM02-cross-client", n=40)
+    v = vulnerabilities(model, strategy(model, "gateway"), h)["S1"]
+    assert v.provenance == "Measured"
+    assert (round(v.low, 3), round(v.mode, 3), round(v.high, 3)) == (0.026, 0.214, 0.519)

@@ -56,8 +56,8 @@ def _pooled(harness: dict, strategy_name: str, categories) -> tuple[int, int]:
 
 
 def measured_block_rate(harness: dict, strategy_name: str, categories) -> tuple[float, tuple[float, float]] | None:
-    """Pooled hold-out block rate relative to the unprotected baseline, with a Katz log-ratio
-    95% interval on the success ratio, or None if the harness didn't measure it well enough."""
+    """Pooled hold-out block rate relative to the unprotected baseline, with a Wilson interval when the
+    baseline always succeeds and a Katz log-ratio interval otherwise, or None if the harness didn't measure it well enough."""
     if RATE_LIMIT in categories:
         abusive = harness.get("rate_limit", {}).get("abusive")
         if abusive is None or strategy_name not in GATEWAY_STRATEGIES:
@@ -71,6 +71,10 @@ def measured_block_rate(harness: dict, strategy_name: str, categories) -> tuple[
     if n0 == 0 or n1 == 0 or k0 < MIN_BASELINE_SUCCESSES:
         return None
     p0 = k0 / n0
+    if k0 == n0:
+        lo, hi = wilson_interval(k1, n1)
+        block = _clip(1 - k1 / n1)
+        return min(max(block, _clip(1 - hi)), _clip(1 - lo)), (_clip(1 - hi), _clip(1 - lo))
     block = _clip(1 - (k1 / n1) / p0)
     if k1 == 0:
         k1, n1 = 0.5, n1 + 0.5
@@ -78,7 +82,8 @@ def measured_block_rate(harness: dict, strategy_name: str, categories) -> tuple[
     r = p1 / p0
     se = math.sqrt((1 - p1) / k1 + (1 - p0) / k0)
     r_lo, r_hi = r * math.exp(-1.96 * se), r * math.exp(1.96 * se)
-    return block, (_clip(1 - r_hi), _clip(1 - r_lo))
+    lo, hi = _clip(1 - r_hi), _clip(1 - r_lo)
+    return min(max(block, lo), hi), (lo, hi)
 
 
 def vulnerabilities(model: Model, strategy: Strategy, harness: dict | None = None) -> dict[str, Pert]:
