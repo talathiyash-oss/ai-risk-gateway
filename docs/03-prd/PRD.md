@@ -4,7 +4,7 @@
 
 | Field | Value |
 |---|---|
-| Version | 0.5 (draft) |
+| Version | 0.6 (draft) |
 | Status | Draft for product owner review |
 | Product owner | Yash Talathi |
 | Approvers | CISO, Head of Compliance, RM lead, Engineering lead |
@@ -19,6 +19,7 @@
 | 0.3 | 2026-10-25 | Updated from stakeholder interviews. CFO: 3:1 funding test, alternatives comparison (FR-33), no insurance recovery, budget-lock risk. Compliance: log minimization and retention, model-risk and deadline risks, DPIA dependency, EU AI Act memo. RM lead: D-2 cap tightened to 1% / 2%; fast review path in scope (D-7, FR-34); shadow AI scenario S5 linked to friction (D-8, FR-35). |
 | 0.4 | 2026-10-25 | Sprint 1 final review: D-9 (GR-02 enforces entitlements at chunk stage, new FR-08 criterion); FR-34 narrowed to GR-01 blocks, stage-scoped reruns, no self-approval. |
 | 0.5 | 2026-10-26 | D-10 outcome-based attack measurement; D-11 lognormal incident losses; FR-30 (GR-06) brought into Sprint 2. |
+| 0.6 | 2026-10-27 | D-12 (haircut applied to all strategies). Sprint 3 dashboard built; FR-25, FR-26, FR-28 and NFR-05 partly deferred (see open items OI-6 to OI-9). |
 
 ---
 
@@ -297,6 +298,7 @@ All decisions confirmed by the product owner on 2026-10-23.
 | D-9 | Other clients' records retrieved by the copilot | Redact identifiers only; drop whole records at the chunk stage | **GR-02 drops other clients' records before generation**, keeping output redaction as defence in depth | The Sprint 1 final review showed that redacting names and account numbers still let other clients' balances, products and notes reach the RM: the October incident without the name. The gateway sits between retrieval and generation, so it can enforce entitlements there. Consequence for FR-31: the upstream index fix and GR-02 now give similar protection at different points and costs, so the Sprint 2 comparison is about cost and defence in depth, not root cause vs. symptom. Decided 2026-10-25. |
 | D-10 | What counts as an attack being stopped | Outcome (attacker gained nothing); detection (a guardrail flagged it) | **Outcome-based**: an attack succeeds only if the answer released to the RM contains what the attack was after (other clients' records, the system prompt, an exfiltration link) | Matches FAIR Vulnerability (the chance an attempt succeeds) and credits defence in depth, e.g. GR-02 neutralizing what GR-01 missed. Per-guardrail detection rates are still reported for tuning. Decided 2026-10-26. |
 | D-11 | Shape of single-incident loss | Simple ranges (PERT); heavy-tailed (lognormal) | **Lognormal for loss per incident**, entered as a 90% range ("we're 90% sure one incident costs between $X and $Y"). Frequencies and effectiveness stay PERT. | Breach losses are heavily skewed (Verizon median claim $110K vs IBM mean $6.29M). PERT understates the rare catastrophic incident that drives the 1-in-10-year figure. Decided 2026-10-26. |
+| D-12 | Does the adaptive-attacker haircut (D-5) apply to untested options? | Measured rates only; all rates | **All block rates, measured or assumed, get the same haircut** | Otherwise measuring a control (the gateway) would make it look worse than an untested alternative (the vendor firewall). Decided 2026-10-26 after the Sprint 2B review. |
 | D-6 | Stretch items | Both later; FR-31 Should and FR-30 later; both Should | **FR-31 promoted to Should. FR-30 brought into Sprint 2 on 2026-10-26 as guardrail GR-06 (OWASP LLM05).** | FR-31 costs little in a simulated copilot, and it lets the FAIR engine compare fixing the root cause upstream with catching the symptom at the gateway. |
 
 ---
