@@ -112,3 +112,21 @@ def test_write_results_is_valid_json(tmp_path, results):
 def test_zero_friction_assumption_is_listed(results):
     assert any(r["input"].endswith(".false_positive_rate") and r["provenance"] == "Assumed"
                and r["source"] == "Strategy adds no blocking" for r in results["inputs"])
+
+
+def test_p_worse_than_nothing(results):
+    s = results["strategies"]
+    assert s["accept_risk"]["p_worse_than_nothing"] is None
+    assert 0 <= s["gateway"]["p_worse_than_nothing"] <= 1
+    assert s["index_fix"]["p_worse_than_nothing"] <= s["gateway"]["p_worse_than_nothing"]
+
+
+def test_measured_fp_provenance_with_harness(model, synthetic_harness):
+    r = run_model(model, synthetic_harness)
+    rows = [x for x in r["inputs"] if x["input"] == "gateway.false_positive_rate"]
+    assert len(rows) == 1 and rows[0]["provenance"] == "Measured"
+
+
+def test_each_strategy_has_one_fp_row(results):
+    names = [x["input"] for x in results["inputs"] if x["input"].endswith("false_positive_rate")]
+    assert len(names) == len(set(names)) == len(results["strategies"])

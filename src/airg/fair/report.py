@@ -62,17 +62,13 @@ def inputs_provenance(model: Model) -> list[dict]:
     for st in model.strategies:
         rows.append(_row(f"{st.strategy_id}.annual_run_cost", st.annual_run_cost))
         rows += [_row(f"{st.strategy_id}.assumed_block_rates.{sid}", p) for sid, p in st.assumed_block_rates.items()]
-        if st.assumed_false_positive_rate is not None:
-            rows.append(_row(f"{st.strategy_id}.assumed_false_positive_rate", st.assumed_false_positive_rate))
-        else:
-            rows.append({"input": f"{st.strategy_id}.false_positive_rate", "provenance": "Assumed",
-                         "source": "Strategy adds no blocking"})
     return rows
 
 
 def run_model(model: Model, harness: dict | None = None) -> dict:
     n = model.iterations
     raw = {}
+    fp_rows = []
     for strategy in model.strategies:
         vulns = vulnerabilities(model, strategy, harness)
         fp = false_positive_rate(strategy, harness)
@@ -91,6 +87,8 @@ def run_model(model: Model, harness: dict | None = None) -> dict:
             "vulnerabilities": {sid: asdict(p) for sid, p in vulns.items()},
             "false_positive_rate": asdict(fp),
         }
+        fp_rows.append({"input": f"{strategy.strategy_id}.false_positive_rate",
+                        "provenance": fp.provenance, "source": fp.source})
     baseline_total = raw["accept_risk"]["total"]
     strategies = {}
     for sid, r in raw.items():
@@ -106,6 +104,7 @@ def run_model(model: Model, harness: dict | None = None) -> dict:
         c10, c90 = _pct(r["run_cost"])
         # Per-year ratios are noisy because annual losses are heavy-tailed, so the range
         # comes from percentiles of the reduction over the mean cost.
+        worse = None if sid == "accept_risk" else round(float((paired < 0).mean()), 3)
         return_range = None if cost == 0 else {"low": round(r10 / cost, 2), "high": round(r90 / cost, 2)}
         if sid == "accept_risk":
             funding = None  # the baseline has nothing to fund
@@ -125,6 +124,7 @@ def run_model(model: Model, harness: dict | None = None) -> dict:
             "friction_range": {"p10": int(round(f10)), "p90": int(round(f90))},
             "risk_reduction_range": {"p10": int(round(r10)), "p90": int(round(r90))},
             "return_range": return_range,
+            "p_worse_than_nothing": worse,
             "total_cost": int(round(cost)),
             "risk_reduction": int(round(reduction)),
             "reduction_to_cost": None if ratio is None else round(ratio, 2),
@@ -142,7 +142,7 @@ def run_model(model: Model, harness: dict | None = None) -> dict:
         "appetite": {"eal": model.appetite_eal, "p90": model.appetite_p90},
         "funding_ratio": model.funding_ratio,
         "strategies": strategies,
-        "inputs": inputs_provenance(model),
+        "inputs": inputs_provenance(model) + fp_rows,
     }
 
 
