@@ -24,7 +24,7 @@ def test_baseline_has_no_reduction(results):
     accept = results["strategies"]["accept_risk"]
     assert accept["risk_reduction"] == 0
     assert accept["reduction_to_cost"] is None
-    assert accept["meets_funding_test"] is False
+    assert accept["meets_funding_test"] is None
 
 
 def test_every_strategy_has_the_outputs(results):
@@ -61,3 +61,54 @@ def test_harness_results_switch_labels_to_measured(model, synthetic_harness):
     assert r["harness_run_id"] == "abc123"
     assert r["strategies"]["gateway"]["vulnerabilities"]["S1"]["provenance"] == "Measured"
     assert r["strategies"]["gateway"]["false_positive_rate"]["provenance"] == "Measured"
+
+
+def test_roi_prd_example():
+    from airg.fair.report import roi
+    assert roi(500_000, 40_000, 53_437.50) == pytest.approx(4.351, abs=0.001)
+    assert roi(100, 0, 0) is None
+
+
+def test_roi_matches_ratio(results):
+    for s in results["strategies"].values():
+        if s["reduction_to_cost"] is not None:
+            assert s["roi"] == pytest.approx(s["reduction_to_cost"] - 1, abs=0.01)
+
+
+def test_vendor_firewall_friction_exceeds_limit(results):
+    assert results["strategies"]["vendor_firewall"]["friction_within_limit"] is False
+    assert results["strategies"]["gateway"]["friction_within_limit"] is True
+
+
+def test_shadow_ai_rises_with_false_blocks_in_report(results):
+    assert (results["strategies"]["gateway"]["eal_by_scenario"]["S5"]
+            > results["strategies"]["accept_risk"]["eal_by_scenario"]["S5"])
+
+
+def test_ranges_are_ordered(results):
+    for s in results["strategies"].values():
+        if s["total_cost"] == 0:
+            continue
+        for key in ("friction_range", "run_cost_range", "risk_reduction_range"):
+            assert s[key]["p10"] <= s[key]["p90"]
+        assert s["return_range"]["low"] <= s["return_range"]["high"]
+
+
+def test_per_scenario_summaries(results):
+    for s in results["strategies"].values():
+        assert set(s["scenarios"]) == {"S1", "S2", "S3", "S4", "S5"}
+        for summary in s["scenarios"].values():
+            assert summary["p10"] <= summary["p50"] <= summary["p90"]
+            assert summary["loss_exceedance"]
+
+
+def test_write_results_is_valid_json(tmp_path, results):
+    import json
+    from airg.fair.report import write_results
+    write_results(results, tmp_path / "out" / "r.json")
+    assert json.loads((tmp_path / "out" / "r.json").read_text())["iterations"] == results["iterations"]
+
+
+def test_zero_friction_assumption_is_listed(results):
+    assert any(r["input"].endswith(".false_positive_rate") and r["provenance"] == "Assumed"
+               and r["source"] == "Strategy adds no blocking" for r in results["inputs"])

@@ -25,6 +25,16 @@ def friction_cost(fp_rate, annual_queries, minutes_lost, hourly_cost):
     return fp_rate * annual_queries * minutes_lost / 60 * hourly_cost
 
 
+def roi(reduction, run_cost, friction):
+    """(reduction - cost) / cost, or None when there is no cost (PRD FR-22)."""
+    cost = run_cost + friction
+    return None if cost == 0 else (reduction - cost) / cost
+
+
+def _pct(values: np.ndarray, lo: int = 10, hi: int = 90) -> tuple[float, float]:
+    return float(np.percentile(values, lo)), float(np.percentile(values, hi))
+
+
 def summarize(total: np.ndarray) -> dict:
     return {
         "eal": int(round(total.mean())),
@@ -54,6 +64,9 @@ def inputs_provenance(model: Model) -> list[dict]:
         rows += [_row(f"{st.strategy_id}.assumed_block_rates.{sid}", p) for sid, p in st.assumed_block_rates.items()]
         if st.assumed_false_positive_rate is not None:
             rows.append(_row(f"{st.strategy_id}.assumed_false_positive_rate", st.assumed_false_positive_rate))
+        else:
+            rows.append({"input": f"{st.strategy_id}.false_positive_rate", "provenance": "Assumed",
+                         "source": "Strategy adds no blocking"})
     return rows
 
 
@@ -73,31 +86,52 @@ def run_model(model: Model, harness: dict | None = None) -> dict:
         hourly = pert_ppf(cost_rng.random(n), f.hourly_cost.low, f.hourly_cost.mode, f.hourly_cost.high)
         raw[strategy.strategy_id] = {
             "strategy": strategy, "losses": losses, "total": sum(losses.values()),
-            "run_cost": float(run_cost.mean()),
-            "friction": float(friction_cost(fp_draws, f.annual_queries, minutes, hourly).mean()),
+            "run_cost": run_cost,
+            "friction": friction_cost(fp_draws, f.annual_queries, minutes, hourly),
             "vulnerabilities": {sid: asdict(p) for sid, p in vulns.items()},
             "false_positive_rate": asdict(fp),
         }
-    baseline_eal = float(raw["accept_risk"]["total"].mean())
+    baseline_total = raw["accept_risk"]["total"]
     strategies = {}
     for sid, r in raw.items():
         summary = summarize(r["total"])
-        cost = r["run_cost"] + r["friction"]
-        reduction = baseline_eal - float(r["total"].mean())
+        run_cost, friction = float(r["run_cost"].mean()), float(r["friction"].mean())
+        cost = run_cost + friction
+        # Common random numbers line the simulated years up, so the paired difference is meaningful.
+        paired = baseline_total - r["total"]
+        reduction = float(paired.mean())
         ratio = None if cost == 0 else reduction / cost
+        r10, r90 = _pct(paired)
+        f10, f90 = _pct(r["friction"])
+        c10, c90 = _pct(r["run_cost"])
+        # Per-year ratios are noisy because annual losses are heavy-tailed, so the range
+        # comes from percentiles of the reduction over the mean cost.
+        return_range = None if cost == 0 else {"low": round(r10 / cost, 2), "high": round(r90 / cost, 2)}
+        if sid == "accept_risk":
+            funding = None  # the baseline has nothing to fund
+        elif ratio is None:
+            funding = reduction > 0
+        else:
+            # Compare the rounded ratio so the flag matches the displayed value.
+            funding = round(ratio, 2) >= model.funding_ratio
         strategies[sid] = {
             "name": r["strategy"].name,
             **summary,
             "eal_by_scenario": {k: int(round(v.mean())) for k, v in r["losses"].items()},
-            "annual_run_cost": int(round(r["run_cost"])),
-            "friction_cost": int(round(r["friction"])),
+            "scenarios": {k: summarize(v) for k, v in r["losses"].items()},
+            "annual_run_cost": int(round(run_cost)),
+            "run_cost_range": {"p10": int(round(c10)), "p90": int(round(c90))},
+            "friction_cost": int(round(friction)),
+            "friction_range": {"p10": int(round(f10)), "p90": int(round(f90))},
+            "risk_reduction_range": {"p10": int(round(r10)), "p90": int(round(r90))},
+            "return_range": return_range,
             "total_cost": int(round(cost)),
             "risk_reduction": int(round(reduction)),
             "reduction_to_cost": None if ratio is None else round(ratio, 2),
-            "roi": None if cost == 0 else round((reduction - cost) / cost, 2),
-            "meets_funding_test": ratio is not None and round(ratio, 2) >= model.funding_ratio,
+            "roi": None if cost == 0 else round(roi(reduction, run_cost, friction), 2),
+            "meets_funding_test": funding,
             "within_appetite": summary["eal"] < model.appetite_eal and summary["p90"] < model.appetite_p90,
-            "friction_within_limit": int(round(r["friction"])) <= model.friction_limit,
+            "friction_within_limit": int(round(friction)) <= model.friction_limit,
             "vulnerabilities": r["vulnerabilities"],
             "false_positive_rate": r["false_positive_rate"],
         }
