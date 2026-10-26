@@ -22,7 +22,7 @@ def test_worse_text_edge_cases():
     assert data.worse_text(0.5) == "50% of years"
     assert data.worse_text(0.4) == "1 year in 2"
     assert data.worse_text(float("nan")) == "n/a"
-    assert data.worse_text(0, iterations=10_000) == "none in 10,000 simulated years"
+    assert data.worse_text(0, iterations=10_000) == "none in 10,000 simulated years (by design, see note)"
 
 
 def test_ratio_flag_and_worse_text():
@@ -56,6 +56,12 @@ def test_options_table(results):
     assert len(rows) == len(results["strategies"])
     baseline = next(r for r in rows if r["Option"] == results["strategies"]["accept_risk"]["name"])
     assert (baseline["Return (avg yr)"], baseline["3:1?"], baseline["Worse than nothing"]) == ("n/a", "n/a", "n/a")
+    assert baseline["Funding verdict"] == "n/a" and baseline["False-block rate (likely)"] == "0.0%"
+    by_name = {r["Option"]: r for r in rows}
+    gateway = by_name[results["strategies"]["gateway"]["name"]]
+    assert gateway["Funding verdict"] == "Meets 3:1" and gateway["False-block rate (likely)"] == "2.0%"
+    vendor = by_name[results["strategies"]["vendor_firewall"]["name"]]
+    assert vendor["Funding verdict"] == "Below 3:1, consider accepting the risk"
 
 
 def test_increments_table(results):
@@ -82,7 +88,11 @@ def test_scenario_rows(results):
 
 def test_effectiveness_rows(results):
     rows = data.effectiveness_rows(results, data.scenario_names())
-    assert len(rows) == sum(len(s["vulnerabilities"]) for s in results["strategies"].values())
+    expected = sum(1 for sid, s in results["strategies"].items() if sid != "accept_risk"
+                   for scenario in s["vulnerabilities"] if scenario != "S5")
+    assert len(rows) == expected
+    assert all(not r["Scenario"].startswith("S5") for r in rows)
+    assert all(r["Option"] != results["strategies"]["accept_risk"]["name"] for r in rows)
     assert all(r["Measured block rate"] in ("see source", "not measured yet") for r in rows)
 
 

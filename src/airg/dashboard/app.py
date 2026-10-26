@@ -170,7 +170,7 @@ with demo:
             st.info("Unprotected copilot output")
             with st.container(border=True):
                 st.text(services.copilot.answer(prompt, client_id))
-        st.markdown("**Audit log entry** (personal data removed)")
+        st.markdown("**Audit log entry** (names, account numbers, contact details and IDs replaced)")
         if services.audit is None:
             st.caption("Audit log is disabled")
         else:

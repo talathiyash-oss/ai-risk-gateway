@@ -23,8 +23,8 @@ OPTIONS_NOTES = (
     "(PRD FR-35). The CFO's 3:1 test uses this figure.\n\n"
     "**Year-to-year range** is the 10th to 90th percentile of the return across simulated years. It shows "
     "how lumpy the payoff is from one year to the next, not how uncertain the average is.\n\n"
-    "**Search index fix** shows \"none\" in the \"Worse than nothing\" column because the model gives it no way to backfire: "
-    "it's assumed to add no false blocks, and it acts only on S1. Its run cost is an unconfirmed estimate, "
+    "**Search index fix** shows \"none ... (by design, see note)\" in the \"Worse than nothing\" column because the model "
+    "gives it no way to backfire: it's assumed to add no false blocks, and it acts only on S1. Its run cost is an unconfirmed estimate, "
     "and it won't be ready for the January 2027 pilot (PRD A-6)."
 )
 
@@ -70,7 +70,7 @@ def worse_text(p, iterations: int | None = None) -> str:
     if _missing(p):
         return "n/a"
     if p == 0:
-        return f"none in {iterations:,} simulated years" if iterations else "none in the simulated years"
+        return f"none in {iterations:,} simulated years (by design, see note)" if iterations else "none in the simulated years"
     if p >= 0.5:
         return f"{p:.0%} of years"
     return f"1 year in {max(2, round(1 / p))}"
@@ -108,6 +108,12 @@ def executive_summary(results: dict, strategy_id: str) -> dict:
     }
 
 
+def funding_verdict(meets) -> str:
+    if meets is None:
+        return "n/a"
+    return "Meets 3:1" if meets else "Below 3:1, consider accepting the risk"
+
+
 def options_table(results: dict) -> list[dict]:
     rows = []
     for s in results["strategies"].values():
@@ -116,12 +122,14 @@ def options_table(results: dict) -> list[dict]:
             "Option": s["name"],
             "Expected loss": money(s["eal"]),
             "1-in-10 yr": money(s["p90"]),
+            "False-block rate (likely)": f"{s['false_positive_rate']['mode']:.1%}",
             "Run cost": money(s["annual_run_cost"]),
             "Friction": money(s["friction_cost"]),
             "Total cost": money(s["total_cost"]),
             "Risk reduced": money(s["risk_reduction"]),
             "Return (avg yr)": ratio(s["reduction_to_cost"]),
             "3:1?": flag(s["meets_funding_test"]),
+            "Funding verdict": funding_verdict(s["meets_funding_test"]),
             "Year-to-year range": "n/a" if not rr else f"{rr['low']:.1f} to {rr['high']:.1f} : 1",
             "Worse than nothing": worse_text(s.get("p_worse_than_nothing"), results.get("iterations")),
             "Within appetite": flag(s["within_appetite"]),
@@ -167,8 +175,12 @@ def scenario_rows(results: dict, strategy_id: str, names: dict[str, str]) -> lis
 
 def effectiveness_rows(results: dict, names: dict[str, str]) -> list[dict]:
     rows = []
-    for s in results["strategies"].values():
+    for strategy_id, s in results["strategies"].items():
+        if strategy_id == BASELINE:
+            continue
         for sid, v in s["vulnerabilities"].items():
+            if sid == "S5":
+                continue
             rows.append({
                 "Option": s["name"],
                 "Scenario": f"{sid} {names.get(sid, '')}".strip(),

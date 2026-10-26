@@ -4,6 +4,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 PYTHON="${PYTHON:-$(command -v python3.12 || command -v python3)}"
+"$PYTHON" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)' || { echo "Python 3.11+ is required"; exit 1; }
 "$PYTHON" -m venv .venv
 .venv/bin/pip install -q --upgrade pip
 .venv/bin/pip install -q -e ".[dev]"
