@@ -1,0 +1,1676 @@
+{
+  "appetite": {
+    "eal": 1000000.0,
+    "p90": 5000000.0
+  },
+  "funding_ratio": 3.0,
+  "harness_run_id": null,
+  "inputs": [
+    {
+      "input": "degradation",
+      "provenance": "Assumed",
+      "source": "PRD D-5: real attackers adapt beyond the test suite"
+    },
+    {
+      "input": "friction.minutes_lost",
+      "provenance": "Assumed",
+      "source": "PRD D-4: 1 min to rephrase, up to 10 min to find the answer another way"
+    },
+    {
+      "input": "friction.hourly_cost",
+      "provenance": "Benchmarked",
+      "source": "PayScale 2026 RM total pay x 1.3 / 2,000 hours (sources.md F-1)"
+    },
+    {
+      "input": "shadow_ai.elasticity",
+      "provenance": "Assumed",
+      "source": "PRD FR-35: how strongly false blocks push RMs to personal AI tools"
+    },
+    {
+      "input": "friction.annual_queries",
+      "provenance": "Assumed",
+      "source": "Scenario doc: 300 RMs x 15 queries/day x 250 days"
+    },
+    {
+      "input": "S1.events_per_year",
+      "provenance": "Assumed",
+      "source": "October pre-pilot incident; 300 RMs without entitlement filtering"
+    },
+    {
+      "input": "S1.loss_per_event",
+      "provenance": "Benchmarked",
+      "source": "Verizon 2026 median claim $110K (sources.md B-3); NYDFS fines R-2"
+    },
+    {
+      "input": "S2.events_per_year",
+      "provenance": "Assumed",
+      "source": "External attacker needs a working injection path; rare"
+    },
+    {
+      "input": "S2.loss_per_event",
+      "provenance": "Benchmarked",
+      "source": "IBM 2026 financial-sector average $6.29M (sources.md B-1)"
+    },
+    {
+      "input": "S3.events_per_year",
+      "provenance": "Assumed",
+      "source": "Curious users and red-teamers"
+    },
+    {
+      "input": "S3.loss_per_event",
+      "provenance": "Assumed",
+      "source": "Investigation and prompt rework; no client data"
+    },
+    {
+      "input": "S4.events_per_year",
+      "provenance": "Assumed",
+      "source": "Scripted use from compromised accounts"
+    },
+    {
+      "input": "S4.loss_per_event",
+      "provenance": "Assumed",
+      "source": "LLM spend and service disruption"
+    },
+    {
+      "input": "S5.events_per_year",
+      "provenance": "Assumed",
+      "source": "RM lead poll: a third of pilot RMs use personal ChatGPT"
+    },
+    {
+      "input": "S5.loss_per_event",
+      "provenance": "Benchmarked",
+      "source": "IBM 2026 shadow-AI breach average ~$5.39M (sources.md B-2)"
+    },
+    {
+      "input": "accept_risk.annual_run_cost",
+      "provenance": "Assumed",
+      "source": "No new controls"
+    },
+    {
+      "input": "vendor_firewall.annual_run_cost",
+      "provenance": "Benchmarked",
+      "source": "Vendor quote reported in the CISO interview"
+    },
+    {
+      "input": "vendor_firewall.assumed_block_rates.S1",
+      "provenance": "Assumed",
+      "source": "Generic PII filter; not entitlement-aware (BRD \u00a76.4)"
+    },
+    {
+      "input": "vendor_firewall.assumed_block_rates.S2",
+      "provenance": "Assumed",
+      "source": "Vendor injection filter (BRD \u00a76.4)"
+    },
+    {
+      "input": "vendor_firewall.assumed_block_rates.S3",
+      "provenance": "Assumed",
+      "source": "BRD \u00a76.4"
+    },
+    {
+      "input": "gateway.annual_run_cost",
+      "provenance": "Assumed",
+      "source": "Hosting plus part-time tuning; needs an IT estimate (BRD \u00a76.4)"
+    },
+    {
+      "input": "gateway.assumed_block_rates.S1",
+      "provenance": "Assumed",
+      "source": "BRD \u00a76.2, used until harness results exist"
+    },
+    {
+      "input": "gateway.assumed_block_rates.S2",
+      "provenance": "Assumed",
+      "source": "BRD \u00a76.2, used until harness results exist"
+    },
+    {
+      "input": "gateway.assumed_block_rates.S3",
+      "provenance": "Assumed",
+      "source": "BRD \u00a76.2, used until harness results exist"
+    },
+    {
+      "input": "gateway.assumed_block_rates.S4",
+      "provenance": "Assumed",
+      "source": "BRD \u00a76.2, used until harness results exist"
+    },
+    {
+      "input": "index_fix.annual_run_cost",
+      "provenance": "Assumed",
+      "source": "Platform team estimate needed (BRD \u00a76.2)"
+    },
+    {
+      "input": "index_fix.assumed_block_rates.S1",
+      "provenance": "Assumed",
+      "source": "Root-cause fix for the October incident"
+    },
+    {
+      "input": "gateway_plus_index_fix.annual_run_cost",
+      "provenance": "Assumed",
+      "source": "Gateway plus index fix run costs"
+    },
+    {
+      "input": "gateway_plus_index_fix.assumed_block_rates.S1",
+      "provenance": "Assumed",
+      "source": "Both layers"
+    },
+    {
+      "input": "gateway_plus_index_fix.assumed_block_rates.S2",
+      "provenance": "Assumed",
+      "source": "As gateway"
+    },
+    {
+      "input": "gateway_plus_index_fix.assumed_block_rates.S3",
+      "provenance": "Assumed",
+      "source": "As gateway"
+    },
+    {
+      "input": "gateway_plus_index_fix.assumed_block_rates.S4",
+      "provenance": "Assumed",
+      "source": "As gateway"
+    },
+    {
+      "input": "accept_risk.false_positive_rate",
+      "provenance": "Assumed",
+      "source": "Strategy adds no blocking"
+    },
+    {
+      "input": "vendor_firewall.false_positive_rate",
+      "provenance": "Assumed",
+      "source": "BRD \u00a76.2"
+    },
+    {
+      "input": "gateway.false_positive_rate",
+      "provenance": "Assumed",
+      "source": "PRD D-2 cap"
+    },
+    {
+      "input": "index_fix.false_positive_rate",
+      "provenance": "Assumed",
+      "source": "Strategy adds no blocking"
+    },
+    {
+      "input": "gateway_plus_index_fix.false_positive_rate",
+      "provenance": "Assumed",
+      "source": "As gateway"
+    }
+  ],
+  "iterations": 10000,
+  "seed": 2027,
+  "strategies": {
+    "accept_risk": {
+      "annual_run_cost": 0,
+      "eal": 4478109,
+      "eal_by_scenario": {
+        "S1": 1886713,
+        "S2": 1219399,
+        "S3": 191491,
+        "S4": 125841,
+        "S5": 1054665
+      },
+      "false_positive_rate": {
+        "high": 0.0,
+        "low": 0.0,
+        "mode": 0.0,
+        "provenance": "Assumed",
+        "source": "Strategy adds no blocking"
+      },
+      "friction_cost": 0,
+      "friction_range": {
+        "p10": 0,
+        "p90": 0
+      },
+      "friction_within_limit": true,
+      "loss_exceedance": [
+        {
+          "probability": 0.9974,
+          "threshold": 250000
+        },
+        {
+          "probability": 0.9861,
+          "threshold": 500000
+        },
+        {
+          "probability": 0.925,
+          "threshold": 1000000
+        },
+        {
+          "probability": 0.719,
+          "threshold": 2000000
+        },
+        {
+          "probability": 0.2882,
+          "threshold": 5000000
+        },
+        {
+          "probability": 0.0833,
+          "threshold": 10000000
+        },
+        {
+          "probability": 0.0143,
+          "threshold": 20000000
+        }
+      ],
+      "meets_funding_test": null,
+      "name": "Accept the risk",
+      "p10": 1141721,
+      "p50": 3174449,
+      "p90": 9158441,
+      "p_worse_than_nothing": null,
+      "reduction_to_cost": null,
+      "return_range": null,
+      "risk_reduction": 0,
+      "risk_reduction_range": {
+        "p10": 0,
+        "p90": 0
+      },
+      "roi": null,
+      "run_cost_range": {
+        "p10": 0,
+        "p90": 0
+      },
+      "scenarios": {
+        "S1": {
+          "eal": 1886713,
+          "loss_exceedance": [
+            {
+              "probability": 0.9684,
+              "threshold": 250000
+            },
+            {
+              "probability": 0.914,
+              "threshold": 500000
+            },
+            {
+              "probability": 0.7434,
+              "threshold": 1000000
+            },
+            {
+              "probability": 0.3958,
+              "threshold": 2000000
+            },
+            {
+              "probability": 0.0186,
+              "threshold": 5000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 10000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 20000000
+            }
+          ],
+          "p10": 545665,
+          "p50": 1666293,
+          "p90": 3513091
+        },
+        "S2": {
+          "eal": 1219399,
+          "loss_exceedance": [
+            {
+              "probability": 0.1958,
+              "threshold": 250000
+            },
+            {
+              "probability": 0.195,
+              "threshold": 500000
+            },
+            {
+              "probability": 0.1871,
+              "threshold": 1000000
+            },
+            {
+              "probability": 0.161,
+              "threshold": 2000000
+            },
+            {
+              "probability": 0.0863,
+              "threshold": 5000000
+            },
+            {
+              "probability": 0.0314,
+              "threshold": 10000000
+            },
+            {
+              "probability": 0.0083,
+              "threshold": 20000000
+            }
+          ],
+          "p10": 0,
+          "p50": 0,
+          "p90": 4263185
+        },
+        "S3": {
+          "eal": 191491,
+          "loss_exceedance": [
+            {
+              "probability": 0.2894,
+              "threshold": 250000
+            },
+            {
+              "probability": 0.048,
+              "threshold": 500000
+            },
+            {
+              "probability": 0.0009,
+              "threshold": 1000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 2000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 5000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 10000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 20000000
+            }
+          ],
+          "p10": 25675,
+          "p50": 155631,
+          "p90": 402827
+        },
+        "S4": {
+          "eal": 125841,
+          "loss_exceedance": [
+            {
+              "probability": 0.0942,
+              "threshold": 250000
+            },
+            {
+              "probability": 0.0048,
+              "threshold": 500000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 1000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 2000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 5000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 10000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 20000000
+            }
+          ],
+          "p10": 28238,
+          "p50": 106591,
+          "p90": 246417
+        },
+        "S5": {
+          "eal": 1054665,
+          "loss_exceedance": [
+            {
+              "probability": 0.3575,
+              "threshold": 250000
+            },
+            {
+              "probability": 0.3443,
+              "threshold": 500000
+            },
+            {
+              "probability": 0.2922,
+              "threshold": 1000000
+            },
+            {
+              "probability": 0.194,
+              "threshold": 2000000
+            },
+            {
+              "probability": 0.0552,
+              "threshold": 5000000
+            },
+            {
+              "probability": 0.0084,
+              "threshold": 10000000
+            },
+            {
+              "probability": 0.0005,
+              "threshold": 20000000
+            }
+          ],
+          "p10": 0,
+          "p50": 0,
+          "p90": 3556117
+        }
+      },
+      "total_cost": 0,
+      "vulnerabilities": {
+        "S1": {
+          "high": 1.0,
+          "low": 1.0,
+          "mode": 1.0,
+          "provenance": "Assumed",
+          "source": "No control in this strategy addresses this scenario"
+        },
+        "S2": {
+          "high": 1.0,
+          "low": 1.0,
+          "mode": 1.0,
+          "provenance": "Assumed",
+          "source": "No control in this strategy addresses this scenario"
+        },
+        "S3": {
+          "high": 1.0,
+          "low": 1.0,
+          "mode": 1.0,
+          "provenance": "Assumed",
+          "source": "No control in this strategy addresses this scenario"
+        },
+        "S4": {
+          "high": 1.0,
+          "low": 1.0,
+          "mode": 1.0,
+          "provenance": "Assumed",
+          "source": "No control in this strategy addresses this scenario"
+        },
+        "S5": {
+          "high": 1.0,
+          "low": 1.0,
+          "mode": 1.0,
+          "provenance": "Assumed",
+          "source": "No control in this strategy addresses this scenario"
+        }
+      },
+      "within_appetite": false
+    },
+    "gateway": {
+      "annual_run_cost": 123415,
+      "eal": 2958826,
+      "eal_by_scenario": {
+        "S1": 763625,
+        "S2": 434691,
+        "S3": 60261,
+        "S4": 40161,
+        "S5": 1660088
+      },
+      "false_positive_rate": {
+        "high": 0.03,
+        "low": 0.01,
+        "mode": 0.02,
+        "provenance": "Assumed",
+        "source": "PRD D-2 cap"
+      },
+      "friction_cost": 139299,
+      "friction_range": {
+        "p10": 64390,
+        "p90": 231669
+      },
+      "friction_within_limit": true,
+      "loss_exceedance": [
+        {
+          "probability": 0.912,
+          "threshold": 250000
+        },
+        {
+          "probability": 0.8221,
+          "threshold": 500000
+        },
+        {
+          "probability": 0.6644,
+          "threshold": 1000000
+        },
+        {
+          "probability": 0.4596,
+          "threshold": 2000000
+        },
+        {
+          "probability": 0.1818,
+          "threshold": 5000000
+        },
+        {
+          "probability": 0.0444,
+          "threshold": 10000000
+        },
+        {
+          "probability": 0.0053,
+          "threshold": 20000000
+        }
+      ],
+      "meets_funding_test": true,
+      "name": "Gateway guardrails",
+      "p10": 287396,
+      "p50": 1758107,
+      "p90": 7051950,
+      "p_worse_than_nothing": 0.141,
+      "reduction_to_cost": 5.78,
+      "return_range": {
+        "high": 14.27,
+        "low": -3.09
+      },
+      "risk_reduction": 1519283,
+      "risk_reduction_range": {
+        "p10": -812409,
+        "p90": 3747745
+      },
+      "roi": 4.78,
+      "run_cost_range": {
+        "p10": 98723,
+        "p90": 149182
+      },
+      "scenarios": {
+        "S1": {
+          "eal": 763625,
+          "loss_exceedance": [
+            {
+              "probability": 0.7401,
+              "threshold": 250000
+            },
+            {
+              "probability": 0.5516,
+              "threshold": 500000
+            },
+            {
+              "probability": 0.2758,
+              "threshold": 1000000
+            },
+            {
+              "probability": 0.0648,
+              "threshold": 2000000
+            },
+            {
+              "probability": 0.0011,
+              "threshold": 5000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 10000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 20000000
+            }
+          ],
+          "p10": 0,
+          "p50": 577636,
+          "p90": 1719661
+        },
+        "S2": {
+          "eal": 434691,
+          "loss_exceedance": [
+            {
+              "probability": 0.0758,
+              "threshold": 250000
+            },
+            {
+              "probability": 0.0755,
+              "threshold": 500000
+            },
+            {
+              "probability": 0.072,
+              "threshold": 1000000
+            },
+            {
+              "probability": 0.0614,
+              "threshold": 2000000
+            },
+            {
+              "probability": 0.0325,
+              "threshold": 5000000
+            },
+            {
+              "probability": 0.0098,
+              "threshold": 10000000
+            },
+            {
+              "probability": 0.0024,
+              "threshold": 20000000
+            }
+          ],
+          "p10": 0,
+          "p50": 0,
+          "p90": 0
+        },
+        "S3": {
+          "eal": 60261,
+          "loss_exceedance": [
+            {
+              "probability": 0.0388,
+              "threshold": 250000
+            },
+            {
+              "probability": 0.0032,
+              "threshold": 500000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 1000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 2000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 5000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 10000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 20000000
+            }
+          ],
+          "p10": 0,
+          "p50": 30760,
+          "p90": 164724
+        },
+        "S4": {
+          "eal": 40161,
+          "loss_exceedance": [
+            {
+              "probability": 0.0066,
+              "threshold": 250000
+            },
+            {
+              "probability": 0.0002,
+              "threshold": 500000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 1000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 2000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 5000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 10000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 20000000
+            }
+          ],
+          "p10": 0,
+          "p50": 24302,
+          "p90": 104252
+        },
+        "S5": {
+          "eal": 1660088,
+          "loss_exceedance": [
+            {
+              "probability": 0.4896,
+              "threshold": 250000
+            },
+            {
+              "probability": 0.475,
+              "threshold": 500000
+            },
+            {
+              "probability": 0.4134,
+              "threshold": 1000000
+            },
+            {
+              "probability": 0.2922,
+              "threshold": 2000000
+            },
+            {
+              "probability": 0.101,
+              "threshold": 5000000
+            },
+            {
+              "probability": 0.018,
+              "threshold": 10000000
+            },
+            {
+              "probability": 0.0012,
+              "threshold": 20000000
+            }
+          ],
+          "p10": 0,
+          "p50": 0,
+          "p90": 5028435
+        }
+      },
+      "total_cost": 262714,
+      "vulnerabilities": {
+        "S1": {
+          "high": 0.64,
+          "low": 0.15000000000000002,
+          "mode": 0.405,
+          "provenance": "Assumed",
+          "source": "BRD \u00a76.2, used until harness results exist; widened for adaptive attackers (D-5)"
+        },
+        "S2": {
+          "high": 0.64,
+          "low": 0.09999999999999998,
+          "mode": 0.36250000000000004,
+          "provenance": "Assumed",
+          "source": "BRD \u00a76.2, used until harness results exist; widened for adaptive attackers (D-5)"
+        },
+        "S3": {
+          "high": 0.5800000000000001,
+          "low": 0.050000000000000044,
+          "mode": 0.31999999999999995,
+          "provenance": "Assumed",
+          "source": "BRD \u00a76.2, used until harness results exist; widened for adaptive attackers (D-5)"
+        },
+        "S4": {
+          "high": 0.5800000000000001,
+          "low": 0.050000000000000044,
+          "mode": 0.31999999999999995,
+          "provenance": "Assumed",
+          "source": "BRD \u00a76.2, used until harness results exist; widened for adaptive attackers (D-5)"
+        },
+        "S5": {
+          "high": 1.0,
+          "low": 1.0,
+          "mode": 1.0,
+          "provenance": "Assumed",
+          "source": "No control in this strategy addresses this scenario"
+        }
+      },
+      "within_appetite": false
+    },
+    "gateway_plus_index_fix": {
+      "annual_run_cost": 175123,
+      "eal": 2668833,
+      "eal_by_scenario": {
+        "S1": 473632,
+        "S2": 434691,
+        "S3": 60261,
+        "S4": 40161,
+        "S5": 1660088
+      },
+      "false_positive_rate": {
+        "high": 0.03,
+        "low": 0.01,
+        "mode": 0.02,
+        "provenance": "Assumed",
+        "source": "As gateway"
+      },
+      "friction_cost": 139299,
+      "friction_range": {
+        "p10": 64390,
+        "p90": 231669
+      },
+      "friction_within_limit": true,
+      "loss_exceedance": [
+        {
+          "probability": 0.8361,
+          "threshold": 250000
+        },
+        {
+          "probability": 0.7229,
+          "threshold": 500000
+        },
+        {
+          "probability": 0.5817,
+          "threshold": 1000000
+        },
+        {
+          "probability": 0.412,
+          "threshold": 2000000
+        },
+        {
+          "probability": 0.166,
+          "threshold": 5000000
+        },
+        {
+          "probability": 0.0407,
+          "threshold": 10000000
+        },
+        {
+          "probability": 0.0051,
+          "threshold": 20000000
+        }
+      ],
+      "meets_funding_test": true,
+      "name": "Gateway + index fix",
+      "p10": 135955,
+      "p50": 1433289,
+      "p90": 6590318,
+      "p_worse_than_nothing": 0.127,
+      "reduction_to_cost": 5.75,
+      "return_range": {
+        "high": 13.29,
+        "low": -1.77
+      },
+      "risk_reduction": 1809276,
+      "risk_reduction_range": {
+        "p10": -555904,
+        "p90": 4178206
+      },
+      "roi": 4.75,
+      "run_cost_range": {
+        "p10": 138084,
+        "p90": 213774
+      },
+      "scenarios": {
+        "S1": {
+          "eal": 473632,
+          "loss_exceedance": [
+            {
+              "probability": 0.5375,
+              "threshold": 250000
+            },
+            {
+              "probability": 0.3469,
+              "threshold": 500000
+            },
+            {
+              "probability": 0.1417,
+              "threshold": 1000000
+            },
+            {
+              "probability": 0.0254,
+              "threshold": 2000000
+            },
+            {
+              "probability": 0.0003,
+              "threshold": 5000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 10000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 20000000
+            }
+          ],
+          "p10": 0,
+          "p50": 291498,
+          "p90": 1202486
+        },
+        "S2": {
+          "eal": 434691,
+          "loss_exceedance": [
+            {
+              "probability": 0.0758,
+              "threshold": 250000
+            },
+            {
+              "probability": 0.0755,
+              "threshold": 500000
+            },
+            {
+              "probability": 0.072,
+              "threshold": 1000000
+            },
+            {
+              "probability": 0.0614,
+              "threshold": 2000000
+            },
+            {
+              "probability": 0.0325,
+              "threshold": 5000000
+            },
+            {
+              "probability": 0.0098,
+              "threshold": 10000000
+            },
+            {
+              "probability": 0.0024,
+              "threshold": 20000000
+            }
+          ],
+          "p10": 0,
+          "p50": 0,
+          "p90": 0
+        },
+        "S3": {
+          "eal": 60261,
+          "loss_exceedance": [
+            {
+              "probability": 0.0388,
+              "threshold": 250000
+            },
+            {
+              "probability": 0.0032,
+              "threshold": 500000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 1000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 2000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 5000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 10000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 20000000
+            }
+          ],
+          "p10": 0,
+          "p50": 30760,
+          "p90": 164724
+        },
+        "S4": {
+          "eal": 40161,
+          "loss_exceedance": [
+            {
+              "probability": 0.0066,
+              "threshold": 250000
+            },
+            {
+              "probability": 0.0002,
+              "threshold": 500000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 1000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 2000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 5000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 10000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 20000000
+            }
+          ],
+          "p10": 0,
+          "p50": 24302,
+          "p90": 104252
+        },
+        "S5": {
+          "eal": 1660088,
+          "loss_exceedance": [
+            {
+              "probability": 0.4896,
+              "threshold": 250000
+            },
+            {
+              "probability": 0.475,
+              "threshold": 500000
+            },
+            {
+              "probability": 0.4134,
+              "threshold": 1000000
+            },
+            {
+              "probability": 0.2922,
+              "threshold": 2000000
+            },
+            {
+              "probability": 0.101,
+              "threshold": 5000000
+            },
+            {
+              "probability": 0.018,
+              "threshold": 10000000
+            },
+            {
+              "probability": 0.0012,
+              "threshold": 20000000
+            }
+          ],
+          "p10": 0,
+          "p50": 0,
+          "p90": 5028435
+        }
+      },
+      "total_cost": 314422,
+      "vulnerabilities": {
+        "S1": {
+          "high": 0.52,
+          "low": 0.030000000000000027,
+          "mode": 0.235,
+          "provenance": "Assumed",
+          "source": "Both layers; widened for adaptive attackers (D-5)"
+        },
+        "S2": {
+          "high": 0.64,
+          "low": 0.09999999999999998,
+          "mode": 0.36250000000000004,
+          "provenance": "Assumed",
+          "source": "As gateway; widened for adaptive attackers (D-5)"
+        },
+        "S3": {
+          "high": 0.5800000000000001,
+          "low": 0.050000000000000044,
+          "mode": 0.31999999999999995,
+          "provenance": "Assumed",
+          "source": "As gateway; widened for adaptive attackers (D-5)"
+        },
+        "S4": {
+          "high": 0.5800000000000001,
+          "low": 0.050000000000000044,
+          "mode": 0.31999999999999995,
+          "provenance": "Assumed",
+          "source": "As gateway; widened for adaptive attackers (D-5)"
+        },
+        "S5": {
+          "high": 1.0,
+          "low": 1.0,
+          "mode": 1.0,
+          "provenance": "Assumed",
+          "source": "No control in this strategy addresses this scenario"
+        }
+      },
+      "within_appetite": false
+    },
+    "index_fix": {
+      "annual_run_cost": 51708,
+      "eal": 3142391,
+      "eal_by_scenario": {
+        "S1": 550995,
+        "S2": 1219399,
+        "S3": 191491,
+        "S4": 125841,
+        "S5": 1054665
+      },
+      "false_positive_rate": {
+        "high": 0.0,
+        "low": 0.0,
+        "mode": 0.0,
+        "provenance": "Assumed",
+        "source": "Strategy adds no blocking"
+      },
+      "friction_cost": 0,
+      "friction_range": {
+        "p10": 0,
+        "p90": 0
+      },
+      "friction_within_limit": true,
+      "loss_exceedance": [
+        {
+          "probability": 0.9485,
+          "threshold": 250000
+        },
+        {
+          "probability": 0.8331,
+          "threshold": 500000
+        },
+        {
+          "probability": 0.6326,
+          "threshold": 1000000
+        },
+        {
+          "probability": 0.4326,
+          "threshold": 2000000
+        },
+        {
+          "probability": 0.1898,
+          "threshold": 5000000
+        },
+        {
+          "probability": 0.0616,
+          "threshold": 10000000
+        },
+        {
+          "probability": 0.0108,
+          "threshold": 20000000
+        }
+      ],
+      "meets_funding_test": true,
+      "name": "Search index fix only",
+      "p10": 359841,
+      "p50": 1565263,
+      "p90": 7674691,
+      "p_worse_than_nothing": 0.0,
+      "reduction_to_cost": 25.83,
+      "return_range": {
+        "high": 51.17,
+        "low": 5.39
+      },
+      "risk_reduction": 1335718,
+      "risk_reduction_range": {
+        "p10": 278612,
+        "p90": 2645716
+      },
+      "roi": 24.83,
+      "run_cost_range": {
+        "p10": 39361,
+        "p90": 64591
+      },
+      "scenarios": {
+        "S1": {
+          "eal": 550995,
+          "loss_exceedance": [
+            {
+              "probability": 0.5977,
+              "threshold": 250000
+            },
+            {
+              "probability": 0.4053,
+              "threshold": 500000
+            },
+            {
+              "probability": 0.179,
+              "threshold": 1000000
+            },
+            {
+              "probability": 0.0335,
+              "threshold": 2000000
+            },
+            {
+              "probability": 0.0004,
+              "threshold": 5000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 10000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 20000000
+            }
+          ],
+          "p10": 0,
+          "p50": 368640,
+          "p90": 1348076
+        },
+        "S2": {
+          "eal": 1219399,
+          "loss_exceedance": [
+            {
+              "probability": 0.1958,
+              "threshold": 250000
+            },
+            {
+              "probability": 0.195,
+              "threshold": 500000
+            },
+            {
+              "probability": 0.1871,
+              "threshold": 1000000
+            },
+            {
+              "probability": 0.161,
+              "threshold": 2000000
+            },
+            {
+              "probability": 0.0863,
+              "threshold": 5000000
+            },
+            {
+              "probability": 0.0314,
+              "threshold": 10000000
+            },
+            {
+              "probability": 0.0083,
+              "threshold": 20000000
+            }
+          ],
+          "p10": 0,
+          "p50": 0,
+          "p90": 4263185
+        },
+        "S3": {
+          "eal": 191491,
+          "loss_exceedance": [
+            {
+              "probability": 0.2894,
+              "threshold": 250000
+            },
+            {
+              "probability": 0.048,
+              "threshold": 500000
+            },
+            {
+              "probability": 0.0009,
+              "threshold": 1000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 2000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 5000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 10000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 20000000
+            }
+          ],
+          "p10": 25675,
+          "p50": 155631,
+          "p90": 402827
+        },
+        "S4": {
+          "eal": 125841,
+          "loss_exceedance": [
+            {
+              "probability": 0.0942,
+              "threshold": 250000
+            },
+            {
+              "probability": 0.0048,
+              "threshold": 500000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 1000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 2000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 5000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 10000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 20000000
+            }
+          ],
+          "p10": 28238,
+          "p50": 106591,
+          "p90": 246417
+        },
+        "S5": {
+          "eal": 1054665,
+          "loss_exceedance": [
+            {
+              "probability": 0.3575,
+              "threshold": 250000
+            },
+            {
+              "probability": 0.3443,
+              "threshold": 500000
+            },
+            {
+              "probability": 0.2922,
+              "threshold": 1000000
+            },
+            {
+              "probability": 0.194,
+              "threshold": 2000000
+            },
+            {
+              "probability": 0.0552,
+              "threshold": 5000000
+            },
+            {
+              "probability": 0.0084,
+              "threshold": 10000000
+            },
+            {
+              "probability": 0.0005,
+              "threshold": 20000000
+            }
+          ],
+          "p10": 0,
+          "p50": 0,
+          "p90": 3556117
+        }
+      },
+      "total_cost": 51708,
+      "vulnerabilities": {
+        "S1": {
+          "high": 0.5800000000000001,
+          "low": 0.050000000000000044,
+          "mode": 0.2775000000000001,
+          "provenance": "Assumed",
+          "source": "Root-cause fix for the October incident; widened for adaptive attackers (D-5)"
+        },
+        "S2": {
+          "high": 1.0,
+          "low": 1.0,
+          "mode": 1.0,
+          "provenance": "Assumed",
+          "source": "No control in this strategy addresses this scenario"
+        },
+        "S3": {
+          "high": 1.0,
+          "low": 1.0,
+          "mode": 1.0,
+          "provenance": "Assumed",
+          "source": "No control in this strategy addresses this scenario"
+        },
+        "S4": {
+          "high": 1.0,
+          "low": 1.0,
+          "mode": 1.0,
+          "provenance": "Assumed",
+          "source": "No control in this strategy addresses this scenario"
+        },
+        "S5": {
+          "high": 1.0,
+          "low": 1.0,
+          "mode": 1.0,
+          "provenance": "Assumed",
+          "source": "No control in this strategy addresses this scenario"
+        }
+      },
+      "within_appetite": false
+    },
+    "vendor_firewall": {
+      "annual_run_cost": 250000,
+      "eal": 4263983,
+      "eal_by_scenario": {
+        "S1": 1396065,
+        "S2": 599187,
+        "S3": 108840,
+        "S4": 125841,
+        "S5": 2034051
+      },
+      "false_positive_rate": {
+        "high": 0.05,
+        "low": 0.02,
+        "mode": 0.03,
+        "provenance": "Assumed",
+        "source": "BRD \u00a76.2"
+      },
+      "friction_cost": 220581,
+      "friction_range": {
+        "p10": 103643,
+        "p90": 364451
+      },
+      "friction_within_limit": false,
+      "loss_exceedance": [
+        {
+          "probability": 0.9904,
+          "threshold": 250000
+        },
+        {
+          "probability": 0.9625,
+          "threshold": 500000
+        },
+        {
+          "probability": 0.8749,
+          "threshold": 1000000
+        },
+        {
+          "probability": 0.6703,
+          "threshold": 2000000
+        },
+        {
+          "probability": 0.2916,
+          "threshold": 5000000
+        },
+        {
+          "probability": 0.0802,
+          "threshold": 10000000
+        },
+        {
+          "probability": 0.0103,
+          "threshold": 20000000
+        }
+      ],
+      "meets_funding_test": false,
+      "name": "Vendor AI firewall",
+      "p10": 881994,
+      "p50": 3026969,
+      "p90": 9128593,
+      "p_worse_than_nothing": 0.271,
+      "reduction_to_cost": 0.46,
+      "return_range": {
+        "high": 4.21,
+        "low": -5.66
+      },
+      "risk_reduction": 214126,
+      "risk_reduction_range": {
+        "p10": -2662441,
+        "p90": 1978887
+      },
+      "roi": -0.54,
+      "run_cost_range": {
+        "p10": 250000,
+        "p90": 250000
+      },
+      "scenarios": {
+        "S1": {
+          "eal": 1396065,
+          "loss_exceedance": [
+            {
+              "probability": 0.9207,
+              "threshold": 250000
+            },
+            {
+              "probability": 0.8222,
+              "threshold": 500000
+            },
+            {
+              "probability": 0.5832,
+              "threshold": 1000000
+            },
+            {
+              "probability": 0.2318,
+              "threshold": 2000000
+            },
+            {
+              "probability": 0.0065,
+              "threshold": 5000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 10000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 20000000
+            }
+          ],
+          "p10": 309170,
+          "p50": 1192514,
+          "p90": 2730053
+        },
+        "S2": {
+          "eal": 599187,
+          "loss_exceedance": [
+            {
+              "probability": 0.1028,
+              "threshold": 250000
+            },
+            {
+              "probability": 0.1025,
+              "threshold": 500000
+            },
+            {
+              "probability": 0.0979,
+              "threshold": 1000000
+            },
+            {
+              "probability": 0.0833,
+              "threshold": 2000000
+            },
+            {
+              "probability": 0.0446,
+              "threshold": 5000000
+            },
+            {
+              "probability": 0.0131,
+              "threshold": 10000000
+            },
+            {
+              "probability": 0.0035,
+              "threshold": 20000000
+            }
+          ],
+          "p10": 0,
+          "p50": 0,
+          "p90": 850520
+        },
+        "S3": {
+          "eal": 108840,
+          "loss_exceedance": [
+            {
+              "probability": 0.1065,
+              "threshold": 250000
+            },
+            {
+              "probability": 0.0109,
+              "threshold": 500000
+            },
+            {
+              "probability": 0.0001,
+              "threshold": 1000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 2000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 5000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 10000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 20000000
+            }
+          ],
+          "p10": 0,
+          "p50": 75479,
+          "p90": 256377
+        },
+        "S4": {
+          "eal": 125841,
+          "loss_exceedance": [
+            {
+              "probability": 0.0942,
+              "threshold": 250000
+            },
+            {
+              "probability": 0.0048,
+              "threshold": 500000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 1000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 2000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 5000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 10000000
+            },
+            {
+              "probability": 0.0,
+              "threshold": 20000000
+            }
+          ],
+          "p10": 28238,
+          "p50": 106591,
+          "p90": 246417
+        },
+        "S5": {
+          "eal": 2034051,
+          "loss_exceedance": [
+            {
+              "probability": 0.551,
+              "threshold": 250000
+            },
+            {
+              "probability": 0.5348,
+              "threshold": 500000
+            },
+            {
+              "probability": 0.4726,
+              "threshold": 1000000
+            },
+            {
+              "probability": 0.3424,
+              "threshold": 2000000
+            },
+            {
+              "probability": 0.1343,
+              "threshold": 5000000
+            },
+            {
+              "probability": 0.0272,
+              "threshold": 10000000
+            },
+            {
+              "probability": 0.0027,
+              "threshold": 20000000
+            }
+          ],
+          "p10": 0,
+          "p50": 795657,
+          "p90": 5900971
+        }
+      },
+      "total_cost": 470581,
+      "vulnerabilities": {
+        "S1": {
+          "high": 0.91,
+          "low": 0.55,
+          "mode": 0.745,
+          "provenance": "Assumed",
+          "source": "Generic PII filter; not entitlement-aware (BRD \u00a76.4); widened for adaptive attackers (D-5)"
+        },
+        "S2": {
+          "high": 0.76,
+          "low": 0.25,
+          "mode": 0.49,
+          "provenance": "Assumed",
+          "source": "Vendor injection filter (BRD \u00a76.4); widened for adaptive attackers (D-5)"
+        },
+        "S3": {
+          "high": 0.8200000000000001,
+          "low": 0.30000000000000004,
+          "mode": 0.575,
+          "provenance": "Assumed",
+          "source": "BRD \u00a76.4; widened for adaptive attackers (D-5)"
+        },
+        "S4": {
+          "high": 1.0,
+          "low": 1.0,
+          "mode": 1.0,
+          "provenance": "Assumed",
+          "source": "No control in this strategy addresses this scenario"
+        },
+        "S5": {
+          "high": 1.0,
+          "low": 1.0,
+          "mode": 1.0,
+          "provenance": "Assumed",
+          "source": "No control in this strategy addresses this scenario"
+        }
+      },
+      "within_appetite": false
+    }
+  }
+}
