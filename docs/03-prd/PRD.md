@@ -187,7 +187,7 @@ Scenarios S1–S5 are defined in a configuration file. Every frequency and effec
 **FR-19 Monte Carlo simulation** (US-04, US-14) Must
 Simulate 10,000 years per scenario (configurable), without and with controls, with an optional fixed seed.
 - *Given* a fixed seed, *when* the engine runs twice, *then* all outputs are identical.
-- *Given* inputs where min = most likely = max (no uncertainty), *when* the engine runs, *then* EAL equals frequency × magnitude exactly.
+- *Given* inputs where min = most likely = max (no uncertainty), *when* the engine runs, *then* EAL equals frequency × magnitude within 1% at 200,000 iterations (event counts are Poisson by design, so exact equality isn't expected; changed 2026-10-26).
 
 **FR-20 Effectiveness haircut** (US-06) Must
 Vulnerability is derived from two separately labelled parts (D-5):
