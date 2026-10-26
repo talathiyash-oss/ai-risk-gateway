@@ -63,17 +63,21 @@ with executive:
     chosen = st.selectbox("Compare doing nothing with", ids, index=ids.index(data.lowest_eal_strategy(results)),
                           format_func=names.get, key="exec_option")
     s = data.executive_summary(results, chosen)
-    c1, c2, c3, c4 = st.columns(4)
+    c1, c2, c3, c4, c5 = st.columns(5)
     c1.metric("Expected loss a year, doing nothing", data.money(s["baseline_eal"]))
     c2.metric(data.md_escape(f"Expected loss a year, {s['name']}"), data.money(s["eal"]), f"{-s['reduction_pct']:+.1f}%",
               delta_color="inverse")
     c3.metric("1-in-10-year loss with this option", data.money(s["p90"]),
               help="The loss exceeded in about 1 simulated year in 10 (90th percentile).")
-    c4.metric("Return (average year)", data.ratio(s["return"]),
+    c4.metric("1-in-10-year loss, doing nothing", data.money(s["baseline_p90"]),
+              help="The loss exceeded in about 1 simulated year in 10 if no option is funded.")
+    c5.metric("Return (average year)", data.ratio(s["return"]),
               help="Risk reduced per $1 of annual cost, including the cost of wrongly blocked questions. "
                    "The CFO's test is 3 : 1.")
     st.subheader("Top options by return")
     table([{"Option": n, "Return (average year)": data.ratio(r)} for n, r in s["top_by_return"]])
+    st.caption("Search index fix: estimated cost not yet confirmed by the platform team, and it won't be ready for "
+               "the January 2027 pilot (PRD A-6). Until then the gateway is the interim control.")
     a = s["appetite"]
     appetite = (f"Proposed risk appetite (CISO proposal, not yet agreed): expected loss under {data.money(a['eal'])} "
                 f"and 1-in-10-year loss under {data.money(a['p90'])}.")

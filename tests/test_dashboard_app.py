@@ -53,3 +53,9 @@ def test_appetite_banner_escapes_dollar_signs(app):
     banners = [e.value for e in app.error] + [s.value for s in app.success]
     appetite = next(b for b in banners if "risk appetite" in b)
     assert "\\$1.00M" in appetite and "$" not in appetite.replace("\\$", "")
+
+
+def test_executive_shows_baseline_p90_and_index_fix_caveat(app):
+    labels = [m.label for m in app.metric]
+    assert "1-in-10-year loss, doing nothing" in labels
+    assert any("won't be ready for the January 2027 pilot" in c.value for c in app.caption)
