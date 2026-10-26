@@ -4,7 +4,7 @@
 
 | Field | Value |
 |---|---|
-| Version | 0.4 (draft) |
+| Version | 0.5 (draft) |
 | Status | Draft for product owner review |
 | Product owner | Yash Talathi |
 | Approvers | CISO, Head of Compliance, RM lead, Engineering lead |
@@ -18,6 +18,7 @@
 | 0.2 | 2026-10-23 | Product owner confirmed D-1 to D-6. Test suite resized and split 60/40 (D-3). Friction inputs became ranges linked to the scenario doc (D-4). Effectiveness haircut split into measured and assumed parts (D-5). FR-31 promoted to Should (D-6). |
 | 0.3 | 2026-10-25 | Updated from stakeholder interviews. CFO: 3:1 funding test, alternatives comparison (FR-33), no insurance recovery, budget-lock risk. Compliance: log minimization and retention, model-risk and deadline risks, DPIA dependency, EU AI Act memo. RM lead: D-2 cap tightened to 1% / 2%; fast review path in scope (D-7, FR-34); shadow AI scenario S5 linked to friction (D-8, FR-35). |
 | 0.4 | 2026-10-25 | Sprint 1 final review: D-9 (GR-02 enforces entitlements at chunk stage, new FR-08 criterion); FR-34 narrowed to GR-01 blocks, stage-scoped reruns, no self-approval. |
+| 0.5 | 2026-10-26 | D-10 outcome-based attack measurement; D-11 lognormal incident losses; FR-30 (GR-06) brought into Sprint 2. |
 
 ---
 
@@ -180,7 +181,7 @@ The harness writes a results file that the FAIR engine reads as the source for V
 ### 4.9 FAIR Risk Engine
 
 **FR-18 Scenario configuration** (US-06) Must
-Scenarios S1–S5 are defined in a configuration file. Every input is a PERT range (min, most likely, max) with a provenance label (Measured / Benchmarked / Assumed) and a source or rationale.
+Scenarios S1–S5 are defined in a configuration file. Every frequency and effectiveness input is a PERT range (min, most likely, max); every loss-per-incident input is a lognormal 90% range (D-11) with a provenance label (Measured / Benchmarked / Assumed) and a source or rationale.
 - *Given* an input without a provenance label, *when* the engine starts, *then* it refuses to run and names the missing field.
 
 **FR-19 Monte Carlo simulation** (US-04, US-14) Must
@@ -239,7 +240,7 @@ Send a prompt through the running gateway and see the decision and the audit log
 
 ### 4.11 Stretch Items
 
-**FR-30 Markdown link stripping, OWASP LLM05** Could (D-6)
+**FR-30 Markdown link stripping (GR-06), OWASP LLM05** Should (D-6, Sprint 2)
 Remove markdown images and links pointing to domains not on an allowlist, blocking data exfiltration through rendered images.
 
 **FR-31 Permission-aware retrieval, OWASP LLM08** Should (D-6)
@@ -294,7 +295,9 @@ All decisions confirmed by the product owner on 2026-10-23.
 | D-7 | Fast path for blocked RMs | Review without override; RM self-override with reason; out of scope | **Review without override (FR-34)**: block stands until a reviewer decides; target 15 minutes | The RM lead said dead ends, not blocks, make RMs give up. Compliance wants blocks to hold. A review path keeps the control and removes the dead end. |
 | D-8 | Shadow AI | Scenario linked to friction; fixed-rate scenario; note only | **New scenario S5, frequency linked to the false-block rate (FR-35)** | A third of pilot RMs already paste client data into personal ChatGPT. Linking S5 to friction puts a dollar figure on the risk cost of over-blocking, so the trade-off between Compliance and the RM lead is settled by the model. |
 | D-9 | Other clients' records retrieved by the copilot | Redact identifiers only; drop whole records at the chunk stage | **GR-02 drops other clients' records before generation**, keeping output redaction as defence in depth | The Sprint 1 final review showed that redacting names and account numbers still let other clients' balances, products and notes reach the RM: the October incident without the name. The gateway sits between retrieval and generation, so it can enforce entitlements there. Consequence for FR-31: the upstream index fix and GR-02 now give similar protection at different points and costs, so the Sprint 2 comparison is about cost and defence in depth, not root cause vs. symptom. Decided 2026-10-25. |
-| D-6 | Stretch items | Both later; FR-31 Should and FR-30 later; both Should | **FR-31 promoted to Should. FR-30 stays Could and is decided at the end of Sprint 2.** | FR-31 costs little in a simulated copilot, and it lets the FAIR engine compare fixing the root cause upstream with catching the symptom at the gateway. |
+| D-10 | What counts as an attack being stopped | Outcome (attacker gained nothing); detection (a guardrail flagged it) | **Outcome-based**: an attack succeeds only if the answer released to the RM contains what the attack was after (other clients' records, the system prompt, an exfiltration link) | Matches FAIR Vulnerability (the chance an attempt succeeds) and credits defence in depth, e.g. GR-02 neutralizing what GR-01 missed. Per-guardrail detection rates are still reported for tuning. Decided 2026-10-26. |
+| D-11 | Shape of single-incident loss | Simple ranges (PERT); heavy-tailed (lognormal) | **Lognormal for loss per incident**, entered as a 90% range ("we're 90% sure one incident costs between $X and $Y"). Frequencies and effectiveness stay PERT. | Breach losses are heavily skewed (Verizon median claim $110K vs IBM mean $6.29M). PERT understates the rare catastrophic incident that drives the 1-in-10-year figure. Decided 2026-10-26. |
+| D-6 | Stretch items | Both later; FR-31 Should and FR-30 later; both Should | **FR-31 promoted to Should. FR-30 brought into Sprint 2 on 2026-10-26 as guardrail GR-06 (OWASP LLM05).** | FR-31 costs little in a simulated copilot, and it lets the FAIR engine compare fixing the root cause upstream with catching the symptom at the gateway. |
 
 ---
 
