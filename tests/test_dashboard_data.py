@@ -12,10 +12,24 @@ def test_money_formats():
     assert [data.money(x) for x in (None, 0, 950, 52_000, 4_480_000)] == ["n/a", "$0", "$950", "$52K", "$4.48M"]
 
 
+def test_money_edge_cases():
+    assert [data.money(x) for x in (-52_000, -4_480_000, -950, 999_999)] == ["-$52K", "-$4.48M", "-$950", "$1.00M"]
+    assert data.money(float("nan")) == data.money(float("inf")) == data.money(float("-inf")) == "n/a"
+
+
+def test_worse_text_edge_cases():
+    assert data.worse_text(1.0) == "100% of years"
+    assert data.worse_text(0.5) == "50% of years"
+    assert data.worse_text(0.4) == "1 year in 2"
+    assert data.worse_text(float("nan")) == "n/a"
+    assert data.worse_text(0, iterations=10_000) == "none in 10,000 simulated years"
+
+
 def test_ratio_flag_and_worse_text():
     assert (data.ratio(None), data.ratio(5.78)) == ("n/a", "5.8 : 1")
     assert (data.flag(None), data.flag(True), data.flag(False)) == ("n/a", "yes", "no")
-    assert (data.worse_text(None), data.worse_text(0), data.worse_text(0.141)) == ("n/a", "never", "1 year in 7")
+    assert (data.worse_text(None), data.worse_text(0), data.worse_text(0.141)) == ("n/a", "none in the simulated years", "1 year in 7")
+    assert data.ratio(float("nan")) == data.ratio(float("inf")) == "n/a"
 
 
 def test_options_exclude_baseline(results):

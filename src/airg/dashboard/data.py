@@ -6,6 +6,7 @@ results/fair.json (NFR-05).
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 
 from airg.fair.inputs import load_model
@@ -22,7 +23,7 @@ OPTIONS_NOTES = (
     "(PRD FR-35). The CFO's 3:1 test uses this figure.\n\n"
     "**Year-to-year range** is the 10th to 90th percentile of the return across simulated years. It shows "
     "how lumpy the payoff is from one year to the next, not how uncertain the average is.\n\n"
-    "**Search index fix** shows \"never\" worse than nothing because the model gives it no way to backfire: "
+    "**Search index fix** shows \"none\" in the \"Worse than nothing\" column because the model gives it no way to backfire: "
     "it's assumed to add no false blocks, and it acts only on S1. Its run cost is an unconfirmed estimate, "
     "and it won't be ready for the January 2027 pilot (PRD A-6)."
 )
@@ -36,30 +37,38 @@ def scenario_names(model_path: str | Path = MODEL_PATH) -> dict[str, str]:
     return {s.scenario_id: s.name for s in load_model(model_path).scenarios}
 
 
+def _missing(x) -> bool:
+    return x is None or (isinstance(x, float) and (math.isnan(x) or math.isinf(x)))
+
+
 def money(x) -> str:
-    if x is None:
+    if _missing(x):
         return "n/a"
-    if abs(x) >= 1e6:
-        return f"${x / 1e6:.2f}M"
-    if abs(x) >= 1e3:
-        return f"${x / 1e3:.0f}K"
-    return f"${x:,.0f}"
+    sign = "-" if x < 0 else ""
+    v = abs(x)
+    if v >= 1e6 or round(v / 1e3) >= 1000:
+        return f"{sign}${v / 1e6:.2f}M"
+    if v >= 1e3:
+        return f"{sign}${v / 1e3:.0f}K"
+    return f"{sign}${v:,.0f}"
 
 
 def ratio(x) -> str:
-    return "n/a" if x is None else f"{x:.1f} : 1"
+    return "n/a" if _missing(x) else f"{x:.1f} : 1"
 
 
 def flag(x) -> str:
     return "n/a" if x is None else ("yes" if x else "no")
 
 
-def worse_text(p) -> str:
-    if p is None:
+def worse_text(p, iterations: int | None = None) -> str:
+    if _missing(p):
         return "n/a"
     if p == 0:
-        return "never"
-    return f"1 year in {round(1 / p)}"
+        return f"none in {iterations:,} simulated years" if iterations else "none in the simulated years"
+    if p >= 0.5:
+        return f"{p:.0%} of years"
+    return f"1 year in {max(2, round(1 / p))}"
 
 
 def options(results: dict) -> dict[str, str]:
@@ -109,7 +118,7 @@ def options_table(results: dict) -> list[dict]:
             "Return (avg yr)": ratio(s["reduction_to_cost"]),
             "3:1?": flag(s["meets_funding_test"]),
             "Year-to-year range": "n/a" if not rr else f"{rr['low']:.1f} to {rr['high']:.1f} : 1",
-            "Worse than nothing": worse_text(s.get("p_worse_than_nothing")),
+            "Worse than nothing": worse_text(s.get("p_worse_than_nothing"), results.get("iterations")),
             "Within appetite": flag(s["within_appetite"]),
             "Friction within limit": flag(s["friction_within_limit"]),
         })
