@@ -9,6 +9,10 @@ Items that block or shape a later phase. Each one has an owner and a phase by wh
 | OI-3 | **Model Risk Management not engaged.** The copilot itself is generative AI and outside SR 26-2's scope, but the FAIR engine is likely in scope, and the bank's governance still applies to the copilot (PRD RISK-08, sources G-1). | 2026-10-25, Compliance interview | Rahul (Compliance) / Daniel (CISO) | Design approval (Phase 4) | Open |
 | OI-4 | **Risk appetite not agreed.** Daniel's thresholds (EAL < $1M, P90 < ~$5M) are a proposal; the Risk Committee is Accountable (RACI R-3). | 2026-10-25, CISO interview | Daniel (CISO) | BRD sign-off (Phase 2) | Open |
 | OI-5 | **Shadow AI keeps residual risk above appetite.** The preliminary estimate leaves ~$2.2M EAL even with the best option, mostly from S5, which the gateway can't reduce. A separate shadow AI initiative (web filtering, training, acceptable use) is recommended. | 2026-10-25, BRD business case | Daniel (CISO) | Risk Committee submission (end of March 2027) | Open |
+| OI-6 | **FR-25 per-guardrail view deferred.** The dashboard compares options (strategies), not individual guardrails, and shows "not measured yet" for block rates. | 2026-10-27, Sprint 3 review | Product owner | After Sprint 2A (per-guardrail measurements) | Open |
+| OI-7 | **FR-26 value and range columns deferred.** The Inputs view shows label and source but not each input's value or range; `results/fair.json` doesn't carry them yet. | 2026-10-27, Sprint 3 review | Product owner | Next dashboard iteration | Open |
+| OI-8 | **FR-28 partly deferred.** What-if covers attack frequency, exposure frequency, shadow-AI elasticity, attacker degradation and gateway cost, but not loss magnitude or switching individual guardrails on and off. | 2026-10-27, Sprint 3 review | Product owner | Next dashboard iteration | Open |
+| OI-9 | **NFR-05 partly met.** Sources are shown per tab, not per value. | 2026-10-27, Sprint 3 review | Product owner | Next dashboard iteration | Open |
 
 Related PRD open questions: Q-5, Q-6, Q-7.
 
