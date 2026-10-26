@@ -13,8 +13,6 @@ from airg.dashboard.data import HARNESS_PATH, MODEL_PATH
 from airg.fair.inputs import Model, Pert, load_model
 from airg.fair.report import run_model
 
-GATEWAY_STRATEGIES = ("gateway", "gateway_plus_index_fix")
-
 
 @dataclass(frozen=True)
 class WhatIf:
@@ -29,6 +27,15 @@ def _scaled(p: Pert, k: float, what: str) -> Pert:
     if k == 1.0:
         return p
     return Pert(p.low * k, p.mode * k, p.high * k, "Assumed", f"What-if: {what} x{k:g} (was: {p.source})")
+
+
+def _add_gateway_share(combo: Pert, gateway: Pert, k: float) -> Pert:
+    """Scale only the gateway's share of a combined run cost: add (k - 1) x the gateway's own cost."""
+    if k == 1.0:
+        return combo
+    return Pert(combo.low + (k - 1) * gateway.low, combo.mode + (k - 1) * gateway.mode,
+                combo.high + (k - 1) * gateway.high, "Assumed",
+                f"What-if: gateway share of run cost x{k:g} (was: {combo.source})")
 
 
 def _with_mode(p: Pert, mode: float, what: str) -> Pert:
@@ -46,10 +53,16 @@ def apply_what_if(model: Model, w: WhatIf) -> Model:
         elif s.scenario_id == "S1":
             s = dataclasses.replace(s, events_per_year=_scaled(s.events_per_year, w.exposure_frequency, "exposure frequency"))
         scenarios.append(s)
-    strategies = tuple(
-        dataclasses.replace(st, annual_run_cost=_scaled(st.annual_run_cost, w.gateway_cost, "gateway run cost"))
-        if st.strategy_id in GATEWAY_STRATEGIES else st
-        for st in model.strategies)
+    by_id = {st.strategy_id: st for st in model.strategies}
+    gateway_cost = by_id["gateway"].annual_run_cost
+    strategies = []
+    for st in model.strategies:
+        if st.strategy_id == "gateway":
+            st = dataclasses.replace(st, annual_run_cost=_scaled(st.annual_run_cost, w.gateway_cost, "gateway run cost"))
+        elif st.strategy_id == "gateway_plus_index_fix":
+            st = dataclasses.replace(st, annual_run_cost=_add_gateway_share(st.annual_run_cost, gateway_cost, w.gateway_cost))
+        strategies.append(st)
+    strategies = tuple(strategies)
     return dataclasses.replace(
         model,
         scenarios=tuple(scenarios),

@@ -52,3 +52,10 @@ def test_reruns_within_ten_seconds():
     start = time.perf_counter()
     run_what_if(WhatIf(attack_frequency=2.0))
     assert time.perf_counter() - start < 10
+
+
+def test_gateway_cost_multiplier_scales_only_the_gateway_share_of_the_combo(base):
+    changed = run_what_if(WhatIf(gateway_cost=2.0))
+    rise = (changed["strategies"]["gateway_plus_index_fix"]["annual_run_cost"]
+            - base["strategies"]["gateway_plus_index_fix"]["annual_run_cost"])
+    assert rise == pytest.approx(base["strategies"]["gateway"]["annual_run_cost"], rel=0.02)
