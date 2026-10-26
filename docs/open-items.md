@@ -17,3 +17,4 @@ Related PRD open questions: Q-5, Q-6, Q-7.
 | ID | Date | Decision | Consequence |
 |---|---|---|---|
 | GD-1 | 2026-10-25 | The product owner started the build (Phases 4–5) with **BRD v0.9 and PRD v0.3 not yet signed off**. The CFO and CISO reviews of the BRD and the PRD sign-off are deferred. | OI-1 to OI-5 carry into the build. Requirements may change after the reviews, so Sprint 1 starts with the parts least likely to change: the simulated copilot, the gateway core and the guardrails. |
+| GD-2 | 2026-10-26 | The product owner started Sprint 2 (test suite, harness, FAIR engine) **before the deferred BRD reviews (CFO, CISO), OI-1 and OI-4 were closed**. | Model inputs from the BRD (§6 ranges, risk appetite, commercial banking assumptions) are used as provisional and labelled Assumed. They may change once the reviews happen, which would mean rerunning the model, not rebuilding it. |
