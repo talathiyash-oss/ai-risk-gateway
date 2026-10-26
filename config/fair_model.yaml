@@ -1,0 +1,114 @@
+# FAIR model inputs for Brindlemoor Assist (PRD FR-18). Every value carries a provenance label.
+# Values come from the BRD §6 preliminary estimate and docs/02-brd/sources.md, and are
+# provisional until the deferred BRD reviews (gate decision GD-2).
+iterations: 10000
+seed: 2027
+
+appetite:            # CISO's proposed thresholds, not yet agreed by the Risk Committee (OI-4)
+  eal: 1000000
+  p90: 5000000
+funding_ratio: 3     # CFO's test: at least $3 of risk reduction per $1 spent
+friction_limit: 200000   # BRD BO-3: friction under 10% of ~$2M hard value
+
+degradation: {low: 0.0, mode: 0.15, high: 0.40, provenance: Assumed,
+              source: "PRD D-5: real attackers adapt beyond the test suite"}
+
+friction:
+  annual_queries: 1125000
+  queries_source: "Scenario doc: 300 RMs x 15 queries/day x 250 days"
+  minutes_lost: {low: 1, mode: 3, high: 10, provenance: Assumed,
+                 source: "PRD D-4: 1 min to rephrase, up to 10 min to find the answer another way"}
+  hourly_cost: {low: 70, mode: 95, high: 130, provenance: Benchmarked,
+                source: "PayScale 2026 RM total pay x 1.3 / 2,000 hours (sources.md F-1)"}
+
+shadow_ai:
+  scenario: S5
+  elasticity: {low: 0.0, mode: 0.5, high: 1.5, provenance: Assumed,
+               source: "PRD FR-35: how strongly false blocks push RMs to personal AI tools"}
+  reference_fp_rate: 0.02
+
+scenarios:
+  - id: S1
+    name: Cross-client exposure
+    harness_categories: [LLM02-cross-client]
+    events_per_year: {low: 2, mode: 6, high: 15, provenance: Assumed,
+                      source: "October pre-pilot incident; 300 RMs without entitlement filtering"}
+    loss_per_event: {p05: 50000, p95: 750000, provenance: Benchmarked,
+                     source: "Verizon 2026 median claim $110K (sources.md B-3); NYDFS fines R-2"}
+  - id: S2
+    name: Injection-driven data theft
+    harness_categories: [LLM01-direct, LLM01-indirect, LLM05-exfiltration]
+    events_per_year: {low: 0.05, mode: 0.2, high: 0.5, provenance: Assumed,
+                      source: "External attacker needs a working injection path; rare"}
+    loss_per_event: {p05: 1000000, p95: 15000000, provenance: Benchmarked,
+                     source: "IBM 2026 financial-sector average $6.29M (sources.md B-1)"}
+  - id: S3
+    name: System prompt leak
+    harness_categories: [LLM07-system-prompt]
+    events_per_year: {low: 1, mode: 3, high: 8, provenance: Assumed,
+                      source: "Curious users and red-teamers"}
+    loss_per_event: {p05: 10000, p95: 150000, provenance: Assumed,
+                     source: "Investigation and prompt rework; no client data"}
+  - id: S4
+    name: Abuse and cost overrun
+    harness_categories: [rate_limit]
+    events_per_year: {low: 2, mode: 4, high: 10, provenance: Assumed,
+                      source: "Scripted use from compromised accounts"}
+    loss_per_event: {p05: 5000, p95: 75000, provenance: Assumed,
+                     source: "LLM spend and service disruption"}
+  - id: S5
+    name: Shadow AI leak
+    harness_categories: []
+    events_per_year: {low: 0.1, mode: 0.4, high: 1.0, provenance: Assumed,
+                      source: "RM lead poll: a third of pilot RMs use personal ChatGPT"}
+    loss_per_event: {p05: 500000, p95: 6000000, provenance: Benchmarked,
+                     source: "IBM 2026 shadow-AI breach average ~$5.39M (sources.md B-2)"}
+
+strategies:
+  - id: accept_risk
+    name: Accept the risk
+    harness_strategy: null
+    annual_run_cost: {low: 0, mode: 0, high: 0, provenance: Assumed, source: "No new controls"}
+
+  - id: vendor_firewall
+    name: Vendor AI firewall
+    harness_strategy: null
+    annual_run_cost: {low: 250000, mode: 250000, high: 250000, provenance: Benchmarked,
+                      source: "Vendor quote reported in the CISO interview"}
+    assumed_block_rates:
+      S1: {low: 0.15, mode: 0.30, high: 0.45, provenance: Assumed, source: "Generic PII filter; not entitlement-aware (BRD §6.4)"}
+      S2: {low: 0.40, mode: 0.60, high: 0.75, provenance: Assumed, source: "Vendor injection filter (BRD §6.4)"}
+      S3: {low: 0.30, mode: 0.50, high: 0.70, provenance: Assumed, source: "BRD §6.4"}
+    assumed_false_positive_rate: {low: 0.02, mode: 0.03, high: 0.05, provenance: Assumed, source: "BRD §6.2"}
+
+  - id: gateway
+    name: Gateway guardrails
+    harness_strategy: all_on
+    annual_run_cost: {low: 80000, mode: 120000, high: 180000, provenance: Assumed,
+                      source: "Hosting plus part-time tuning; needs an IT estimate (BRD §6.4)"}
+    assumed_block_rates:
+      S1: {low: 0.60, mode: 0.70, high: 0.85, provenance: Assumed, source: "BRD §6.2, used until harness results exist"}
+      S2: {low: 0.60, mode: 0.75, high: 0.90, provenance: Assumed, source: "BRD §6.2, used until harness results exist"}
+      S3: {low: 0.70, mode: 0.80, high: 0.95, provenance: Assumed, source: "BRD §6.2, used until harness results exist"}
+      S4: {low: 0.70, mode: 0.80, high: 0.95, provenance: Assumed, source: "BRD §6.2, used until harness results exist"}
+    assumed_false_positive_rate: {low: 0.01, mode: 0.02, high: 0.03, provenance: Assumed, source: "PRD D-2 cap"}
+
+  - id: index_fix
+    name: Search index fix only
+    harness_strategy: permission_aware_only
+    annual_run_cost: {low: 30000, mode: 50000, high: 80000, provenance: Assumed,
+                      source: "Platform team estimate needed (BRD §6.2)"}
+    assumed_block_rates:
+      S1: {low: 0.70, mode: 0.85, high: 0.95, provenance: Assumed, source: "Root-cause fix for the October incident"}
+
+  - id: gateway_plus_index_fix
+    name: Gateway + index fix
+    harness_strategy: all_on_permission_aware
+    annual_run_cost: {low: 110000, mode: 170000, high: 260000, provenance: Assumed,
+                      source: "Gateway plus index fix run costs"}
+    assumed_block_rates:
+      S1: {low: 0.80, mode: 0.90, high: 0.97, provenance: Assumed, source: "Both layers"}
+      S2: {low: 0.60, mode: 0.75, high: 0.90, provenance: Assumed, source: "As gateway"}
+      S3: {low: 0.70, mode: 0.80, high: 0.95, provenance: Assumed, source: "As gateway"}
+      S4: {low: 0.70, mode: 0.80, high: 0.95, provenance: Assumed, source: "As gateway"}
+    assumed_false_positive_rate: {low: 0.01, mode: 0.02, high: 0.03, provenance: Assumed, source: "As gateway"}
