@@ -65,3 +65,38 @@ def test_scenarios_use_independent_streams():
     a, _ = simulate_losses(m, FULL, one(0.0))
     b, _ = simulate_losses(m, {**FULL, "S5": one(0.5)}, one(0.0))
     assert np.array_equal(a["S1"], b["S1"])
+
+
+def test_lower_vulnerability_never_increases_any_year():
+    m = constant_model(5_000)
+    high, _ = simulate_losses(m, {**FULL, "S1": one(0.5)}, one(0.0))
+    low, _ = simulate_losses(m, {**FULL, "S1": one(0.3)}, one(0.0))
+    assert np.all(low["S1"] <= high["S1"])
+
+
+def test_ordered_vulnerability_ranges_are_coupled_per_year():
+    from airg.fair.inputs import Pert as P
+    m = constant_model(5_000)
+    s1 = dataclasses.replace(m.scenarios[0], loss_per_event=Range90(50_000, 750_000, "Assumed", "test"))
+    m = dataclasses.replace(m, scenarios=(s1, m.scenarios[1]))
+    lo, _ = simulate_losses(m, {**FULL, "S1": P(0.1, 0.2, 0.3, "Assumed", "t")}, one(0.0))
+    hi, _ = simulate_losses(m, {**FULL, "S1": P(0.4, 0.5, 0.6, "Assumed", "t")}, one(0.0))
+    assert np.all(lo["S1"] <= hi["S1"])
+
+
+def test_lognormal_losses_have_the_right_mean():
+    import math
+    from airg.fair.distributions import lognormal_params
+    m = constant_model(200_000)
+    s1 = dataclasses.replace(m.scenarios[0], loss_per_event=Range90(50_000, 750_000, "Assumed", "test"))
+    m = dataclasses.replace(m, scenarios=(s1, m.scenarios[1]))
+    mu, sigma = lognormal_params(50_000, 750_000)
+    losses, _ = simulate_losses(m, FULL, one(0.0))
+    assert losses["S1"].mean() == pytest.approx(4 * math.exp(mu + sigma ** 2 / 2), rel=0.03)
+
+
+def test_elasticity_does_not_depend_on_strategy_fp():
+    m = constant_model(2_000)
+    a, _ = simulate_losses(m, FULL, Pert(0, 0, 0, "Assumed", "t"))
+    b, _ = simulate_losses(m, FULL, Pert(0.01, 0.02, 0.03, "Assumed", "t"))
+    assert np.array_equal(a["S1"], b["S1"])

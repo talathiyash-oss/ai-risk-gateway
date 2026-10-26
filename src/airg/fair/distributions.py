@@ -19,6 +19,24 @@ def pert(rng: np.random.Generator, low: float, mode: float, high: float, size: i
     return low + rng.beta(alpha, beta, size) * (high - low)
 
 
+def pert_ppf(u, low: float, mode: float, high: float) -> np.ndarray:
+    """Inverse CDF of the PERT, by interpolating a tabulated beta CDF (no SciPy).
+
+    Being a deterministic map from uniforms, it lets callers use common random numbers."""
+    u = np.asarray(u, dtype=float)
+    if not low <= mode <= high:
+        raise ValueError(f"PERT needs low <= mode <= high, got {low}, {mode}, {high}")
+    if high == low:
+        return np.full_like(u, low, dtype=float)
+    alpha = 1 + 4 * (mode - low) / (high - low)
+    beta = 1 + 4 * (high - mode) / (high - low)
+    x = np.linspace(0.0, 1.0, 4001)
+    pdf = x ** (alpha - 1) * (1 - x) ** (beta - 1)
+    cdf = np.concatenate(([0.0], np.cumsum((pdf[1:] + pdf[:-1]) / 2 * np.diff(x))))
+    cdf /= cdf[-1]
+    return low + np.interp(u, cdf, x) * (high - low)
+
+
 def pert_mean(low: float, mode: float, high: float) -> float:
     return (low + 4 * mode + high) / 6
 

@@ -49,3 +49,22 @@ def test_wilson_interval_matches_prd_example():
 
 def test_wilson_interval_empty():
     assert wilson_interval(0, 0) == (0.0, 1.0)
+
+
+def test_pert_ppf_degenerate_is_constant():
+    from airg.fair.distributions import pert_ppf
+    assert pert_ppf(np.array([0.1, 0.9]), 2.0, 2.0, 2.0).tolist() == [2.0, 2.0]
+
+
+def test_pert_ppf_is_monotone():
+    from airg.fair.distributions import pert_ppf
+    out = pert_ppf(np.linspace(0, 1, 501), 1, 3, 10)
+    assert np.all(np.diff(out) >= 0)
+
+
+def test_pert_ppf_matches_pert_mean_and_median():
+    from airg.fair.distributions import pert, pert_mean, pert_ppf
+    rng = np.random.default_rng(0)
+    assert pert_ppf(rng.random(200_000), 1, 3, 10).mean() == pytest.approx(pert_mean(1, 3, 10), rel=0.01)
+    median = np.median(pert(np.random.default_rng(1), 1, 3, 10, 200_000))
+    assert float(pert_ppf(0.5, 1, 3, 10)) == pytest.approx(median, rel=0.01)
