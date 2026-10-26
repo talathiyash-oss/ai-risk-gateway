@@ -130,3 +130,18 @@ def test_measured_fp_provenance_with_harness(model, synthetic_harness):
 def test_each_strategy_has_one_fp_row(results):
     names = [x["input"] for x in results["inputs"] if x["input"].endswith("false_positive_rate")]
     assert len(names) == len(set(names)) == len(results["strategies"])
+
+
+def test_increments_present_and_consistent(results):
+    pairs = [("index_fix", "gateway_plus_index_fix"), ("gateway", "gateway_plus_index_fix"),
+             ("accept_risk", "index_fix"), ("accept_risk", "gateway")]
+    assert [(i["from"], i["to"]) for i in results["increments"]] == pairs
+    s = results["strategies"]
+    for i in results["increments"]:
+        a, b = s[i["from"]], s[i["to"]]
+        assert abs(i["added_reduction"] - (a["eal"] - b["eal"])) <= 1
+        assert abs(i["added_cost"] - (b["total_cost"] - a["total_cost"])) <= 1
+        if i["added_cost"] <= 0:
+            assert i["ratio"] is None
+        else:
+            assert i["ratio"] is not None

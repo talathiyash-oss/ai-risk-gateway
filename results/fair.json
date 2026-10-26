@@ -5,6 +5,40 @@
   },
   "funding_ratio": 3.0,
   "harness_run_id": null,
+  "increments": [
+    {
+      "added_cost": 262714,
+      "added_reduction": 473558,
+      "from": "index_fix",
+      "meets_funding_test": false,
+      "ratio": 1.8,
+      "to": "gateway_plus_index_fix"
+    },
+    {
+      "added_cost": 51708,
+      "added_reduction": 289993,
+      "from": "gateway",
+      "meets_funding_test": true,
+      "ratio": 5.61,
+      "to": "gateway_plus_index_fix"
+    },
+    {
+      "added_cost": 51708,
+      "added_reduction": 1335718,
+      "from": "accept_risk",
+      "meets_funding_test": true,
+      "ratio": 25.83,
+      "to": "index_fix"
+    },
+    {
+      "added_cost": 262714,
+      "added_reduction": 1519283,
+      "from": "accept_risk",
+      "meets_funding_test": true,
+      "ratio": 5.78,
+      "to": "gateway"
+    }
+  ],
   "inputs": [
     {
       "input": "degradation",

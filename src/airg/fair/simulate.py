@@ -13,6 +13,8 @@ act by thinning: base events are drawn at the uncontrolled rate and each is kept
 keep-uniform is below Vulnerability, so every strategy sees the same potential events and
 losses, and lower Vulnerability can never raise any year's loss. The shadow-AI uplift
 (multiplier >= 1) adds extra events by superposition on top of the thinned base events.
+The uplift's event count uses a variable amount of randomness, so the uplift is paired
+across strategies only when they share a false-positive range.
 
 Caveat: effectiveness and the false-positive rate are redrawn every simulated year and
 independently per scenario, which narrows the tails; a two-level simulation (draw

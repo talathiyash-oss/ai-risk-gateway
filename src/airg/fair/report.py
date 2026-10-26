@@ -65,6 +65,23 @@ def inputs_provenance(model: Model) -> list[dict]:
     return rows
 
 
+INCREMENT_PAIRS = (("index_fix", "gateway_plus_index_fix"), ("gateway", "gateway_plus_index_fix"),
+                   ("accept_risk", "index_fix"), ("accept_risk", "gateway"))
+
+
+def _increments(strategies: dict, funding_ratio: float) -> list[dict]:
+    """Return on the extra spend of moving from one option to another."""
+    out = []
+    for a, b in INCREMENT_PAIRS:
+        added_cost = strategies[b]["total_cost"] - strategies[a]["total_cost"]
+        added_reduction = strategies[a]["eal"] - strategies[b]["eal"]
+        ratio = None if added_cost <= 0 else round(added_reduction / added_cost, 2)
+        out.append({"from": a, "to": b, "added_cost": added_cost, "added_reduction": added_reduction,
+                    "ratio": ratio,
+                    "meets_funding_test": None if ratio is None else ratio >= funding_ratio})
+    return out
+
+
 def run_model(model: Model, harness: dict | None = None) -> dict:
     n = model.iterations
     raw = {}
@@ -136,6 +153,7 @@ def run_model(model: Model, harness: dict | None = None) -> dict:
             "false_positive_rate": r["false_positive_rate"],
         }
     return {
+        "increments": _increments(strategies, model.funding_ratio),
         "iterations": n,
         "seed": model.seed,
         "harness_run_id": harness.get("run_id") if harness else None,

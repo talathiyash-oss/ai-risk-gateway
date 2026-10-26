@@ -40,9 +40,15 @@ def main() -> None:
         rr = s.get("return_range")
         rng = "n/a" if not rr else f"{rr['low']:.1f} to {rr['high']:.1f} : 1"
         worse = s.get("p_worse_than_nothing")
-        worse_txt = "n/a" if worse is None else (f"1 year in {round(1 / worse)}" if worse > 0 else "never")
+        worse_txt = "n/a" if worse is None else (f"1 year in {round(1 / worse)}" if worse > 0 else "never*")
         print(f"{s['name']:26}{money(s['eal']):>14}{money(s['p90']):>12}{money(s['total_cost']):>13}"
               f"{ratio(s['reduction_to_cost']):>17}{flag(s['meets_funding_test']):>6}{rng:>21}{worse_txt:>20}")
+
+    names = {k: v["name"] for k, v in results["strategies"].items()}
+    print("\nAdding one option on top of another")
+    for i in results["increments"]:
+        print(f"  {names[i['to']]} instead of {names[i['from']]}: +{money(i['added_cost'])} a year buys "
+              f"{money(i['added_reduction'])} less expected loss ({ratio(i['ratio'])}, 3:1? {flag(i['meets_funding_test'])})")
 
     print("\nReturn (avg yr) = average annual risk reduced per $1 of annual cost (run cost plus the cost")
     print("  of wrongly blocked questions). Risk reduced is net of extra shadow-AI losses caused by")
@@ -51,6 +57,8 @@ def main() -> None:
     print("  how lumpy the payoff is from year to year, not how uncertain the average is. A negative")
     print("  value is a year when losses were higher than doing nothing, mainly from extra shadow-AI")
     print("  incidents caused by false blocks.")
+    print("* The model gives the index fix no way to backfire: it is assumed to add no false blocks and acts only on S1.")
+    print("  Its run cost is an unconfirmed estimate, and it will not be ready for the January 2027 pilot (PRD A-6).")
 
     a = results["appetite"]
     within = [s["name"] for s in results["strategies"].values() if s["within_appetite"]]
@@ -61,7 +69,7 @@ def main() -> None:
 
     over = [s["name"] for s in results["strategies"].values() if not s["friction_within_limit"]]
     if over:
-        print("Friction above the $200K limit (BRD BO-3): " + ", ".join(over))
+        print(f"Friction above the {money(model.friction_limit)} limit (BRD BO-3): " + ", ".join(over))
 
     baseline = results["strategies"]["accept_risk"]["eal_by_scenario"]
     print("\nExpected loss by scenario if nothing is done: "
