@@ -97,3 +97,8 @@ def test_provenance_rows_and_filter(results):
 def test_compare_rows_identical_inputs(results):
     rows = data.compare_rows(results, results)
     assert all(r["Expected loss"] == r["Expected loss (what-if)"] for r in rows)
+
+
+def test_md_escape():
+    assert data.md_escape("$1.00M and $5.00M") == "\\$1.00M and \\$5.00M"
+    assert data.md_escape("no dollars") == "no dollars"

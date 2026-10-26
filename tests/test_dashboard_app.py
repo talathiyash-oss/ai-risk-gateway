@@ -47,3 +47,9 @@ def test_live_demo_blocks_injection():
     at.button(key="demo_send").click().run()
     assert not at.exception
     assert any(e.value.startswith("Blocked") for e in at.error)
+
+
+def test_appetite_banner_escapes_dollar_signs(app):
+    banners = [e.value for e in app.error] + [s.value for s in app.success]
+    appetite = next(b for b in banners if "risk appetite" in b)
+    assert "\\$1.00M" in appetite and "$" not in appetite.replace("\\$", "")

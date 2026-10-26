@@ -29,6 +29,11 @@ OPTIONS_NOTES = (
 )
 
 
+def md_escape(text: str) -> str:
+    """Escape dollar signs so Streamlit markdown does not treat $...$ as maths."""
+    return text.replace("$", "\\$")
+
+
 def load_results(path: str | Path = RESULTS_PATH) -> dict:
     return json.loads(Path(path).read_text())
 

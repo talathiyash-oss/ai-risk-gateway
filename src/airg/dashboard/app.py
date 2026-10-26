@@ -65,7 +65,7 @@ with executive:
     s = data.executive_summary(results, chosen)
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Expected loss a year, doing nothing", data.money(s["baseline_eal"]))
-    c2.metric(f"Expected loss a year, {s['name']}", data.money(s["eal"]), f"{-s['reduction_pct']:+.1f}%",
+    c2.metric(data.md_escape(f"Expected loss a year, {s['name']}"), data.money(s["eal"]), f"{-s['reduction_pct']:+.1f}%",
               delta_color="inverse")
     c3.metric("1-in-10-year loss with this option", data.money(s["p90"]),
               help="The loss exceeded in about 1 simulated year in 10 (90th percentile).")
@@ -78,29 +78,30 @@ with executive:
     appetite = (f"Proposed risk appetite (CISO proposal, not yet agreed): expected loss under {data.money(a['eal'])} "
                 f"and 1-in-10-year loss under {data.money(a['p90'])}.")
     if s["within_appetite"]:
-        st.success(f"{appetite} Within appetite: {', '.join(s['within_appetite'])}.")
+        st.success(data.md_escape(f"{appetite} Within appetite: {', '.join(s['within_appetite'])}."))
     else:
         largest = s["largest_remaining_scenario"]
-        st.error(f"{appetite} No option alone brings the bank within appetite. The largest remaining loss with "
-                 f"{s['name']} is {largest} {scenario_names.get(largest, '')} "
-                 f"({data.money(s['largest_remaining_eal'])} a year).")
-    st.caption(source_note)
+        st.error(data.md_escape(
+            f"{appetite} No option alone brings the bank within appetite. The largest remaining loss with "
+            f"{s['name']} is {largest} {scenario_names.get(largest, '')} "
+            f"({data.money(s['largest_remaining_eal'])} a year)."))
+    st.caption(data.md_escape(source_note))
 
 with curve:
     picked = st.multiselect("Options", list(results["strategies"]), default=[data.BASELINE, chosen],
                             format_func=lambda sid: results["strategies"][sid]["name"], key="curve_options")
     if picked:
         st.line_chart(pd.DataFrame(data.loss_exceedance_rows(results, picked)).set_index("Loss above"))
-        st.caption("Chance that a year's losses exceed each amount. " + source_note)
-    st.subheader(f"By scenario: doing nothing vs {names[chosen]}")
+        st.caption(data.md_escape("Chance that a year's losses exceed each amount. " + source_note))
+    st.subheader(data.md_escape(f"By scenario: doing nothing vs {names[chosen]}"))
     table(data.scenario_rows(results, chosen, scenario_names))
 
 with options_tab:
     table(data.options_table(results))
     st.subheader("Adding one option on top of another")
     table(data.increments_table(results))
-    st.markdown(data.OPTIONS_NOTES)
-    st.caption(source_note)
+    st.markdown(data.md_escape(data.OPTIONS_NOTES))
+    st.caption(data.md_escape(source_note))
 
 with what_if:
     st.write("Change an assumption and see how the comparison moves. The model reruns with the same seed, "
@@ -155,12 +156,19 @@ with demo:
         with with_gw:
             st.markdown("**With the gateway**")
             if result.status == "ok":
-                st.success(result.answer)
+                st.success("Allowed")
+                with st.container(border=True):
+                    st.text(result.answer)
             else:
                 st.error(f"Blocked (HTTP {result.http_status}). Reference {result.request_id}.")
         with without_gw:
             st.markdown("**Without the gateway**")
-            st.info(services.copilot.answer(prompt, client_id))
-        entry = next((e for e in reversed(services.audit.entries()) if e.get("request_id") == result.request_id), {})
+            st.info("Unprotected copilot output")
+            with st.container(border=True):
+                st.text(services.copilot.answer(prompt, client_id))
         st.markdown("**Audit log entry** (personal data removed)")
-        st.json(entry)
+        if services.audit is None:
+            st.caption("Audit log is disabled")
+        else:
+            entry = next((e for e in reversed(services.audit.entries()) if e.get("request_id") == result.request_id), {})
+            st.json(entry)
